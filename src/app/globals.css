@@ -3,63 +3,80 @@
 @tailwind utilities;
 
 /* ──────────────────────────────────────────────────────────
- * 1. Design Tokens (RGB 채널 — tailwind.config.js 에서 매핑)
+ * 종이와 잉크 — Design Tokens (RGB 채널)
+ * 밝은 모드: 따뜻한 오프화이트 종이 (Pantone 2026 Cloud Dancer 에 가까운 톤)
+ * 어두운 모드: 따뜻한 먹색 밤
  * ────────────────────────────────────────────────────────── */
 @layer base {
   :root {
-    --background: 250 250 250; /* #FAFAFA */
-    --foreground: 12 14 20;
-    --surface: 255 255 255;
-    --surface-muted: 243 244 246;
-    --surface-elevated: 255 255 255;
-    --border: 228 228 231;
-    --muted: 100 106 120;
+    --paper: 245 243 238; /* #F5F3EE */
+    --paper-deep: 236 233 226; /* #ECE9E2 — 코드, 인라인 코드 */
+    --paper-raised: 251 250 247; /* #FBFAF7 — 팝오버 */
+    --ink: 35 33 29; /* #23211D */
+    --ink-soft: 59 56 51; /* #3B3833 — 본문 */
+    --muted: 107 102 92; /* #6B665C — 5.1:1 */
+    --faint: 168 162 150; /* 장식용 (텍스트 X) */
+    --rule: 226 222 213; /* #E2DED5 */
+    --rule-strong: 208 202 190;
+    --accent: 74 102 80; /* #4A6650 세이지 — 5.7:1 */
+    --accent-soft: 214 224 212;
+    --marker: 236 222 168; /* 형광펜 */
+    --danger: 168 72 56;
+    --success: 60 104 70; /* #3C6846 — 5.6:1 */
 
-    --primary: 59 130 246; /* #3B82F6 */
-    --cyan: 6 182 212; /* #06B6D4 */
-    --success: 16 185 129; /* #10B981 */
-    --danger: 239 68 68;
-    --warning: 217 119 6;
+    --cat-database: 58 111 168; /* #3A6FA8 */
+    --cat-python: 183 115 28; /* #B7731C */
+    --cat-cs: 138 90 174; /* #8A5AAE */
+    --cat-network: 46 134 96; /* #2E8660 */
 
-    --cat-cs: 139 92 246;
-    --cat-database: 59 130 246;
-    --cat-python: 217 119 6;
-    --cat-network: 8 145 178;
+    --seq-0: 229 225 216;
+    --seq-1: 207 220 207;
+    --seq-2: 168 192 170;
+    --seq-3: 124 156 128;
+    --seq-4: 79 111 85;
 
-    --code-bg: 248 250 252;
-    --code-header: 241 245 249;
+    --font-serif: "Newsreader Variable", "Noto Serif KR Variable", ui-serif, Georgia, serif;
+    --grain-opacity: 0.045;
+    --grain-blend: multiply;
 
     color-scheme: light;
   }
 
   .dark {
-    --background: 9 13 22; /* #090D16 */
-    --foreground: 229 231 235;
-    --surface: 17 24 39; /* #111827 */
-    --surface-muted: 22 30 46;
-    --surface-elevated: 24 32 50;
-    --border: 31 41 55; /* #1F2937 */
-    --muted: 148 163 184;
+    --paper: 22 21 19; /* #161513 */
+    --paper-deep: 30 29 26; /* #1E1D1A */
+    --paper-raised: 36 34 31;
+    --ink: 236 231 220; /* #ECE7DC */
+    --ink-soft: 207 201 188;
+    --muted: 155 149 138; /* 6.1:1 */
+    --faint: 98 94 86;
+    --rule: 45 43 39;
+    --rule-strong: 64 61 55;
+    --accent: 163 191 167; /* #A3BFA7 */
+    --accent-soft: 46 58 48;
+    --marker: 76 80 56;
+    --danger: 222 140 120;
+    --success: 140 190 150;
 
-    --primary: 59 130 246;
-    --cyan: 6 182 212;
-    --success: 16 185 129;
-    --danger: 248 113 113;
-    --warning: 251 191 36;
+    --cat-database: 95 143 204; /* #5F8FCC */
+    --cat-python: 196 133 48; /* #C48530 */
+    --cat-cs: 157 120 198; /* #9D78C6 */
+    --cat-network: 70 160 115; /* #46A073 */
 
-    --cat-cs: 167 139 250;
-    --cat-database: 96 165 250;
-    --cat-python: 251 191 36;
-    --cat-network: 34 211 238;
+    --seq-0: 40 38 34;
+    --seq-1: 47 64 51;
+    --seq-2: 63 90 69;
+    --seq-3: 90 125 96;
+    --seq-4: 134 169 139;
 
-    --code-bg: 11 16 28;
-    --code-header: 15 22 37;
+    --grain-opacity: 0.06;
+    --grain-blend: soft-light;
 
     color-scheme: dark;
   }
 
   * {
-    @apply border-border;
+    @apply border-rule;
   }
 
   html {
@@ -69,139 +86,117 @@
   }
 
   body {
-    @apply bg-background font-sans text-foreground antialiased;
-    font-feature-settings: "ss01", "ss02", "cv11";
+    @apply bg-paper font-sans text-ink antialiased;
     word-break: keep-all;
     overflow-wrap: break-word;
+    /* 한글 명조에는 이탤릭이 없어 기울기를 합성하면 어색합니다 → 한글은 바로 세우고 라틴만 이탤릭 */
+    font-synthesis-style: none;
+    transition: background-color 0.6s ease, color 0.6s ease;
+  }
+
+  /* 종이 결 — SVG 노이즈를 아주 옅게 깔아 화면의 "플라스틱" 느낌을 줄입니다 */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    pointer-events: none;
+    opacity: var(--grain-opacity);
+    mix-blend-mode: var(--grain-blend);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.2 0 0 0 0 0.18 0 0 0 0 0.15 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }
 
   code,
   kbd,
   pre,
   samp {
-    font-feature-settings: "liga" 1, "calt" 1; /* JetBrains Mono / Fira Code ligatures */
+    font-feature-settings: "liga" 1, "calt" 1;
     word-break: normal;
     overflow-wrap: normal;
   }
 
   ::selection {
-    background: rgb(var(--primary) / 0.25);
+    background: rgb(var(--marker));
+    color: rgb(var(--ink));
   }
 
   :focus-visible {
-    @apply outline-none ring-2 ring-primary/60 ring-offset-2 ring-offset-background;
+    outline: 1.5px solid rgb(var(--accent));
+    outline-offset: 3px;
+    border-radius: 4px;
   }
 
-  /* 얇은 커스텀 스크롤바 */
   * {
     scrollbar-width: thin;
-    scrollbar-color: rgb(var(--muted) / 0.35) transparent;
+    scrollbar-color: rgb(var(--rule-strong)) transparent;
   }
 }
 
 /* ──────────────────────────────────────────────────────────
- * 2. Component-level Utilities
+ * Components
  * ────────────────────────────────────────────────────────── */
 @layer components {
-  /* 브랜드 그라디언트 텍스트 */
-  .text-gradient {
-    @apply bg-clip-text text-transparent;
-    background-image: linear-gradient(
-      100deg,
-      rgb(var(--primary)) 0%,
-      rgb(var(--cyan)) 50%,
-      rgb(var(--primary)) 100%
-    );
-    background-size: 200% auto;
+  /* 이탤릭 세리프 메타 텍스트: 날짜, 캡션, 작은 라벨 */
+  .meta {
+    @apply font-serif text-[0.95rem] italic text-muted;
   }
 
-  /* Bento 카드 공통 표면 */
-  .surface-card {
-    @apply relative overflow-hidden rounded-3xl border border-border bg-surface/80 shadow-card backdrop-blur-sm dark:shadow-none;
+  /* 섹션 라벨 — 짧은 선 + 세리프 */
+  .section-label {
+    @apply flex items-center gap-3 font-serif text-[0.95rem] italic text-muted;
   }
-
-  /* 마우스를 따라다니는 radial glow (내부 + 보더) */
-  .glow-card {
-    --mx: 50%;
-    --my: 50%;
-  }
-  .glow-card::before,
-  .glow-card::after {
+  .section-label::before {
     content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.35s ease;
-    z-index: 0;
-  }
-  .glow-card::before {
-    background: radial-gradient(
-      520px circle at var(--mx) var(--my),
-      rgb(var(--primary) / 0.1),
-      transparent 42%
-    );
-  }
-  .glow-card::after {
-    padding: 1px;
-    background: radial-gradient(
-      360px circle at var(--mx) var(--my),
-      rgb(var(--primary) / 0.75),
-      rgb(var(--cyan) / 0.35) 30%,
-      transparent 62%
-    );
-    -webkit-mask:
-      linear-gradient(#000 0 0) content-box,
-      linear-gradient(#000 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-  }
-  .glow-card:hover::before,
-  .glow-card:hover::after {
-    opacity: 1;
+    @apply h-px w-8 bg-rule-strong;
   }
 
-  .chip {
-    @apply inline-flex items-center gap-1.5 rounded-full border border-border bg-surface-muted/70 px-3 py-1 text-xs font-medium text-foreground/80 transition-colors;
+  /* 잉크 밑줄이 왼쪽에서 번지는 링크 */
+  .ink-link {
+    background-image: linear-gradient(currentColor, currentColor);
+    background-size: 0% 1px;
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+    transition: background-size 0.5s cubic-bezier(0.22, 1, 0.36, 1), color 0.3s;
+  }
+  .ink-link:hover,
+  .group:hover .ink-link {
+    background-size: 100% 1px;
   }
 
-  .eyebrow {
-    @apply font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted;
+  /* 목차처럼 점선으로 이어지는 행 */
+  .leader {
+    @apply flex items-baseline gap-2;
   }
-}
+  .leader > .dots {
+    @apply mx-1 min-w-4 flex-1 translate-y-[-0.3em] border-b border-dotted border-rule-strong;
+  }
 
-@layer components {
-  /* 미니 계산기 슬라이더: 채워진 구간은 브랜드 그라디언트 */
+  /* 미니 계산기 슬라이더 */
   .range-input {
     --fill: 50%;
-    @apply h-1.5 w-full cursor-pointer appearance-none rounded-full outline-none;
+    @apply h-[3px] w-full cursor-pointer appearance-none rounded-full outline-none;
     background:
-      linear-gradient(90deg, rgb(var(--primary)), rgb(var(--cyan))) 0 / var(--fill) 100% no-repeat,
-      rgb(var(--border));
+      linear-gradient(rgb(var(--accent)), rgb(var(--accent))) 0 / var(--fill) 100% no-repeat,
+      rgb(var(--rule-strong));
   }
   .range-input::-webkit-slider-thumb {
-    @apply size-4 appearance-none rounded-full border-2 border-white bg-primary transition-transform;
-    box-shadow: 0 0 0 4px rgb(var(--primary) / 0.2), 0 2px 6px rgb(0 0 0 / 0.3);
+    @apply size-3.5 appearance-none rounded-full border border-paper-raised bg-accent transition-transform;
+    box-shadow: 0 0 0 4px rgb(var(--accent) / 0.15);
   }
   .range-input::-webkit-slider-thumb:hover {
-    transform: scale(1.15);
+    transform: scale(1.2);
   }
   .range-input::-moz-range-thumb {
-    @apply size-4 rounded-full border-2 border-white bg-primary;
-    box-shadow: 0 0 0 4px rgb(var(--primary) / 0.2);
+    @apply size-3.5 rounded-full border border-paper-raised bg-accent;
   }
 }
 
 @layer utilities {
-  .bg-aurora {
-    background:
-      radial-gradient(60rem 30rem at 12% -10%, rgb(var(--primary) / 0.12), transparent 60%),
-      radial-gradient(40rem 26rem at 95% 0%, rgb(var(--cyan) / 0.1), transparent 60%);
+  .text-balance {
+    text-wrap: balance;
   }
-  .mask-fade-b {
-    -webkit-mask-image: linear-gradient(to bottom, #000 40%, transparent);
-    mask-image: linear-gradient(to bottom, #000 40%, transparent);
+  .text-pretty {
+    text-wrap: pretty;
   }
   .no-scrollbar::-webkit-scrollbar {
     display: none;
@@ -209,18 +204,22 @@
   .no-scrollbar {
     scrollbar-width: none;
   }
+  .mask-radial {
+    -webkit-mask-image: radial-gradient(closest-side, #000 60%, transparent);
+    mask-image: radial-gradient(closest-side, #000 60%, transparent);
+  }
 }
 
 /* ──────────────────────────────────────────────────────────
- * 3. Code Blocks — rehype-pretty-code + shiki (dual theme)
+ * Code — rehype-pretty-code + shiki (kanagawa lotus / dragon)
  * ────────────────────────────────────────────────────────── */
 [data-rehype-pretty-code-figure] {
   margin: 0;
 }
 
 [data-rehype-pretty-code-figure] pre {
-  @apply overflow-x-auto py-4 font-mono text-[13.5px] leading-[1.7];
-  background: rgb(var(--code-bg)) !important;
+  @apply overflow-x-auto py-5 font-mono text-[13px] leading-[1.75];
+  background: transparent !important;
   margin: 0;
   border-radius: 0;
 }
@@ -235,7 +234,6 @@
   padding: 0;
 }
 
-/* shiki dual theme → light/dark 전환 */
 [data-rehype-pretty-code-figure] code[data-theme],
 [data-rehype-pretty-code-figure] code[data-theme] span {
   color: var(--shiki-light);
@@ -245,60 +243,54 @@
   color: var(--shiki-dark);
 }
 
-/* 라인 + 라인 넘버 */
 [data-rehype-pretty-code-figure] [data-line] {
   position: relative;
-  padding: 0 1.5rem 0 4.25rem;
-  border-left: 2px solid transparent;
+  padding: 0 1.5rem 0 3.75rem;
 }
 [data-rehype-pretty-code-figure] [data-line]::before {
   counter-increment: line;
   content: counter(line);
   position: absolute;
   left: 0;
-  width: 2.5rem;
+  width: 2.25rem;
   text-align: right;
-  color: rgb(var(--muted) / 0.45);
+  color: rgb(var(--muted) / 0.8);
+  font-size: 0.85em;
   user-select: none;
 }
 [data-rehype-pretty-code-figure] [data-line]:empty::after {
   content: " ";
 }
 
-/* 라인 하이라이팅: ```ts {2,4-5} */
+/* 라인 하이라이트: 형광펜을 옅게 칠한 느낌 */
 [data-rehype-pretty-code-figure] [data-highlighted-line],
 [data-rehype-pretty-code-figure] [data-line].highlighted {
-  background: rgb(var(--primary) / 0.1);
-  border-left-color: rgb(var(--primary));
+  background: rgb(var(--marker) / 0.45);
 }
 [data-rehype-pretty-code-figure] [data-highlighted-line]::before,
 [data-rehype-pretty-code-figure] [data-line].highlighted::before {
-  color: rgb(var(--primary));
+  color: rgb(var(--ink-soft));
 }
-
-/* 단어 하이라이팅: ```ts /useMemo/ */
 [data-rehype-pretty-code-figure] [data-highlighted-chars] {
-  border-radius: 0.25rem;
-  background: rgb(var(--primary) / 0.16);
-  box-shadow: 0 0 0 1px rgb(var(--primary) / 0.35);
-  padding: 0.05rem 0.15rem;
+  border-radius: 0.2rem;
+  background: rgb(var(--marker) / 0.7);
+  padding: 0.05rem 0.1rem;
 }
 
-/* Diff: shiki transformerNotationDiff  → // [!code ++] / // [!code --] */
+/* Diff — 초록·빨강 대신 세이지·테라코타의 옅은 바탕 */
 [data-rehype-pretty-code-figure] [data-line].diff.add {
-  background: rgb(var(--success) / 0.12);
-  border-left-color: rgb(var(--success));
+  background: rgb(var(--success) / 0.1);
 }
 [data-rehype-pretty-code-figure] [data-line].diff.remove {
-  background: rgb(var(--danger) / 0.1);
-  border-left-color: rgb(var(--danger));
-  opacity: 0.75;
+  background: rgb(var(--danger) / 0.08);
+}
+[data-rehype-pretty-code-figure] [data-line].diff.remove > span {
+  opacity: 0.6;
 }
 [data-rehype-pretty-code-figure] [data-line].diff.add > span:first-child::before,
 [data-rehype-pretty-code-figure] [data-line].diff.remove > span:first-child::before {
   position: absolute;
-  left: 3rem;
-  font-weight: 700;
+  left: 2.75rem;
   user-select: none;
 }
 [data-rehype-pretty-code-figure] [data-line].diff.add > span:first-child::before {
@@ -310,11 +302,10 @@
   color: rgb(var(--danger)) !important;
 }
 
-/* Focus: // [!code focus] */
 [data-rehype-pretty-code-figure] pre.has-focused [data-line]:not(.focused) {
   filter: blur(1.5px);
-  opacity: 0.5;
-  transition: filter 0.3s, opacity 0.3s;
+  opacity: 0.45;
+  transition: filter 0.4s, opacity 0.4s;
 }
 [data-rehype-pretty-code-figure] pre.has-focused:hover [data-line]:not(.focused) {
   filter: none;
@@ -322,20 +313,38 @@
 }
 
 /* ──────────────────────────────────────────────────────────
- * 4. KaTeX
+ * KaTeX — 박스 없이, 논문처럼 오른쪽에 식 번호
  * ────────────────────────────────────────────────────────── */
+.prose {
+  counter-reset: equation figure;
+}
 .katex {
-  font-size: 1.08em;
+  font-size: 1.06em;
 }
 .katex-display {
-  @apply my-6 overflow-x-auto overflow-y-hidden rounded-2xl border border-border bg-surface-muted/50 px-4 py-5;
+  position: relative;
+  margin: 2em 0 !important;
+  padding: 0.25em 3rem 0.25em 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+.prose .katex-display::after {
+  counter-increment: equation;
+  content: "(" counter(equation) ")";
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: var(--font-serif);
+  font-size: 0.9rem;
+  color: rgb(var(--muted));
 }
 .katex-display > .katex {
   white-space: nowrap;
 }
 
 /* ──────────────────────────────────────────────────────────
- * 5. Theme switch — circular clip-path (View Transitions API)
+ * Theme switch — 원형 clip-path (View Transitions API)
  * ────────────────────────────────────────────────────────── */
 ::view-transition-old(root),
 ::view-transition-new(root) {
@@ -359,4 +368,16 @@
     animation-duration: 0.001ms !important;
     transition-duration: 0.001ms !important;
   }
+}
+
+/* ──────────────────────────────────────────────────────────
+ * 그림 번호 — "그림 1." 처럼 본문 안 다이어그램에 차례로 번호
+ * ────────────────────────────────────────────────────────── */
+.prose .mermaid-figure {
+  counter-increment: figure;
+}
+.prose .mermaid-figure .figure-number::before {
+  content: "그림 " counter(figure) ". ";
+  font-style: normal;
+  color: rgb(var(--ink-soft));
 }

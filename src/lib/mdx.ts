@@ -17,7 +17,7 @@ import { mdxComponents } from "@/components/mdx/mdx-components";
 
 const prettyCodeOptions: PrettyCodeOptions = {
   // light/dark 두 테마를 CSS 변수로 동시에 출력 → globals.css에서 .dark 기준 전환
-  theme: { light: "github-light", dark: "tokyo-night" },
+  theme: { light: "kanagawa-lotus", dark: "kanagawa-dragon" },
   keepBackground: false,
   defaultLang: { block: "plaintext" },
   transformers: [

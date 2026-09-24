@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, ArrowRight, CalendarDays, ChevronRight, Clock, Layers } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 
 import { CategoryBadge } from "@/components/post/category-badge";
 import { DifficultyTag } from "@/components/post/difficulty-tag";
@@ -10,9 +10,9 @@ import { ReadingProgress } from "@/components/post/reading-progress";
 import { TableOfContents } from "@/components/post/table-of-contents";
 import { renderMdx } from "@/lib/mdx";
 import { getAdjacentPosts, getAllPosts, getPostBySlug } from "@/lib/posts";
-import { categories } from "@/lib/site";
+import { siteConfig } from "@/lib/site";
 import { extractToc } from "@/lib/toc";
-import { formatDate } from "@/lib/utils";
+import { formatDateKo } from "@/lib/utils";
 
 type Params = { slug: string };
 
@@ -39,119 +39,109 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
   const post = getPostBySlug(slug);
   if (!post) notFound();
 
-  const [content, toc] = [await renderMdx(post.source), extractToc(post.source)];
+  const content = await renderMdx(post.source);
+  const toc = extractToc(post.source);
   const { newer, older, related } = getAdjacentPosts(slug);
 
   return (
     <>
       <ReadingProgress />
 
-      <div className="container pb-10 pt-8 lg:pt-12">
-        <div className="mx-auto grid max-w-[1120px] grid-cols-1 gap-12 lg:grid-cols-[minmax(0,780px)_260px] lg:justify-between">
-          {/* ───────── Main column ───────── */}
-          <article className="min-w-0">
-            <header className="mb-10 border-b border-border pb-8">
-              <nav aria-label="Breadcrumb" className="mb-6 flex items-center gap-1.5 text-xs text-muted">
-                <Link href="/posts" className="hover:text-foreground">
-                  Posts
-                </Link>
-                <ChevronRight className="size-3" />
-                <Link href={`/posts?category=${post.category}`} className="hover:text-foreground">
-                  {categories[post.category].label}
-                </Link>
-              </nav>
+      <article className="container pb-10 pt-14 sm:pt-20">
+        {/* ───────── 머리말 ───────── */}
+        <header className="mx-auto max-w-[1100px]">
+          <div className="max-w-[760px]">
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+              <CategoryBadge category={post.category} />
+              {post.series && <span className="font-serif text-sm italic text-muted">{post.series}</span>}
+            </div>
 
-              <div className="mb-5 flex flex-wrap items-center gap-2">
-                <CategoryBadge category={post.category} />
-                <DifficultyTag difficulty={post.difficulty} />
-                {post.series && (
-                  <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface-muted/60 px-2.5 py-0.5 text-xs text-muted">
-                    <Layers className="size-3" /> {post.series}
-                  </span>
-                )}
-              </div>
+            <h1 className="mt-7 text-balance font-serif text-display-2 font-light text-ink">{post.title}</h1>
+            <p className="mt-6 text-pretty font-serif text-[1.2rem] font-light leading-[1.75] text-muted">
+              {post.description}
+            </p>
 
-              <h1 className="text-balance text-3xl font-bold leading-[1.25] tracking-tight sm:text-[2.6rem]">
-                {post.title}
-              </h1>
-              <p className="mt-4 text-pretty text-lg leading-relaxed text-muted">{post.description}</p>
+            <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-muted">
+              <span className="text-ink-soft">{siteConfig.author.name}</span>
+              <span className="text-faint">·</span>
+              <time dateTime={post.date} className="font-serif italic">
+                {formatDateKo(post.date)}
+              </time>
+              <span className="text-faint">·</span>
+              <span>{post.readingTime.minutes}분 분량</span>
+              <span className="text-faint">·</span>
+              <DifficultyTag difficulty={post.difficulty} />
+            </div>
+          </div>
+          <div className="mt-12 h-px w-full bg-rule" />
+        </header>
 
-              <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-muted">
-                <span className="inline-flex items-center gap-1.5">
-                  <CalendarDays className="size-4" />
-                  <time dateTime={post.date}>{formatDate(post.date)}</time>
-                </span>
-                <span className="inline-flex items-center gap-1.5">
-                  <Clock className="size-4" /> {post.readingTime.minutes}분 분량
-                </span>
-                <span className="flex flex-wrap gap-1.5">
-                  {post.tags.map((tag) => (
-                    <Link
-                      key={tag}
-                      href={`/posts?tag=${encodeURIComponent(tag)}`}
-                      className="font-mono text-xs text-muted transition-colors hover:text-primary"
-                    >
-                      #{tag}
-                    </Link>
-                  ))}
-                </span>
-              </div>
-            </header>
-
-            {/* 모바일/태블릿 목차 */}
-            <details className="group mb-8 rounded-2xl border border-border bg-surface/70 p-4 lg:hidden">
-              <summary className="cursor-pointer list-none text-sm font-medium marker:hidden">
-                <span className="flex items-center justify-between">
-                  목차 보기
-                  <ChevronRight className="size-4 transition-transform group-open:rotate-90" />
-                </span>
+        <div className="mx-auto mt-12 grid max-w-[1100px] grid-cols-1 gap-16 lg:grid-cols-[minmax(0,700px)_220px] lg:justify-between">
+          <div className="min-w-0">
+            {/* 모바일·태블릿 차례 */}
+            <details className="group mb-10 border-b border-rule pb-4 lg:hidden">
+              <summary className="flex cursor-pointer list-none items-center justify-between text-sm text-muted marker:hidden">
+                <span className="meta text-sm">차례 펼치기</span>
+                <span className="font-serif transition-transform duration-500 group-open:rotate-45">+</span>
               </summary>
-              <TableOfContents items={toc} group="toc-mobile" className="mt-4" />
+              <TableOfContents items={toc} group="toc-mobile" className="mt-5" />
             </details>
 
-            <div className="prose prose-techlog dark:prose-invert">{content}</div>
+            <div className="prose prose-paper">{content}</div>
 
-            {/* ───────── Footer: prev / next / related ───────── */}
-            <footer className="mt-16 space-y-10 border-t border-border pt-10">
-              <div className="grid gap-4 sm:grid-cols-2">
+            {/* 태그 */}
+            <p className="mt-16 text-sm leading-[2] text-muted">
+              <span className="meta mr-3 text-sm">낱말</span>
+              {post.tags.map((tag, i) => (
+                <span key={tag}>
+                  <Link href={`/posts?tag=${encodeURIComponent(tag)}`} className="ink-link text-ink-soft hover:text-ink">
+                    {tag}
+                  </Link>
+                  {i < post.tags.length - 1 && <span className="mx-2 text-faint">·</span>}
+                </span>
+              ))}
+            </p>
+
+            {/* ───────── 맺음 ───────── */}
+            <footer className="mt-16 border-t border-rule pt-10">
+              <div className="grid gap-8 sm:grid-cols-2">
                 {older ? (
-                  <Link
-                    href={`/posts/${older.slug}`}
-                    className="group rounded-2xl border border-border bg-surface/70 p-5 transition-colors hover:border-primary/40"
-                  >
-                    <span className="flex items-center gap-1 text-xs text-muted">
-                      <ArrowLeft className="size-3.5 transition-transform group-hover:-translate-x-0.5" /> 이전 글
+                  <Link href={`/posts/${older.slug}`} className="group">
+                    <span className="meta inline-flex items-center gap-1.5 text-sm">
+                      <ArrowLeft className="size-3.5 transition-transform duration-500 group-hover:-translate-x-1" strokeWidth={1.5} />
+                      이전 글
                     </span>
-                    <span className="mt-2 line-clamp-2 block font-semibold">{older.title}</span>
+                    <span className="mt-2 block font-serif text-lg leading-snug text-ink">
+                      <span className="ink-link">{older.title}</span>
+                    </span>
                   </Link>
                 ) : (
                   <span />
                 )}
                 {newer && (
-                  <Link
-                    href={`/posts/${newer.slug}`}
-                    className="group rounded-2xl border border-border bg-surface/70 p-5 text-right transition-colors hover:border-primary/40"
-                  >
-                    <span className="flex items-center justify-end gap-1 text-xs text-muted">
-                      다음 글 <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
+                  <Link href={`/posts/${newer.slug}`} className="group sm:text-right">
+                    <span className="meta inline-flex items-center gap-1.5 text-sm">
+                      다음 글
+                      <ArrowRight className="size-3.5 transition-transform duration-500 group-hover:translate-x-1" strokeWidth={1.5} />
                     </span>
-                    <span className="mt-2 line-clamp-2 block font-semibold">{newer.title}</span>
+                    <span className="mt-2 block font-serif text-lg leading-snug text-ink">
+                      <span className="ink-link">{newer.title}</span>
+                    </span>
                   </Link>
                 )}
               </div>
 
               {related.length > 0 && (
-                <section>
-                  <h2 className="eyebrow mb-4">Related in the knowledge graph</h2>
-                  <ul className="grid gap-3 sm:grid-cols-3">
+                <section className="mt-16">
+                  <p className="section-label">이어서 읽기 좋은 글</p>
+                  <ul className="mt-6">
                     {related.map((r) => (
-                      <li key={r.slug}>
-                        <Link
-                          href={`/posts/${r.slug}`}
-                          className="flex h-full flex-col gap-3 rounded-2xl border border-border bg-surface/70 p-4 transition-colors hover:border-primary/40"
-                        >
-                          <CategoryBadge category={r.category} link={false} className="self-start" />
-                          <span className="line-clamp-3 text-sm font-medium leading-snug">{r.title}</span>
+                      <li key={r.slug} className="border-t border-rule first:border-t-0">
+                        <Link href={`/posts/${r.slug}`} className="group flex items-baseline justify-between gap-6 py-4">
+                          <span className="font-serif text-[1.1rem] text-ink transition-colors duration-500 group-hover:text-accent">
+                            <span className="ink-link">{r.title}</span>
+                          </span>
+                          <CategoryBadge category={r.category} link={false} className="shrink-0" />
                         </Link>
                       </li>
                     ))}
@@ -159,16 +149,16 @@ export default async function PostPage({ params }: { params: Promise<Params> }) 
                 </section>
               )}
             </footer>
-          </article>
+          </div>
 
-          {/* ───────── Sticky sidebar ───────── */}
+          {/* ───────── 오른쪽 여백 ───────── */}
           <aside className="hidden lg:block">
-            <div className="sticky top-24">
+            <div className="sticky top-28">
               <PostSidebar toc={toc} readingTime={post.readingTime} difficulty={post.difficulty} />
             </div>
           </aside>
         </div>
-      </div>
+      </article>
     </>
   );
 }

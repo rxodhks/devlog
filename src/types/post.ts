@@ -7,6 +7,8 @@ export interface PostFrontmatter {
   /** 카드/지식 그래프 노드처럼 좁은 공간에 쓰는 짧은 제목 */
   shortTitle?: string;
   description: string;
+  /** 홈 "이번 글"에 쓰는 한 줄 인용 */
+  quote?: string;
   date: string; // ISO (YYYY-MM-DD)
   category: CategoryId;
   tags: string[];

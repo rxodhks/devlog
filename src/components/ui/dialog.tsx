@@ -16,21 +16,21 @@ export const DialogContent = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
 >(({ className, children, ...props }, ref) => (
   <DialogPrimitive.Portal>
-    <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-background/70 backdrop-blur-md" />
+    <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-paper/80 backdrop-blur-sm" />
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        "fixed left-1/2 top-1/2 z-50 max-h-[90vh] w-[min(96vw,1100px)] -translate-x-1/2 -translate-y-1/2 overflow-auto rounded-3xl border border-border bg-surface p-6 shadow-2xl outline-none",
+        "fixed left-1/2 top-1/2 z-50 max-h-[90vh] w-[min(96vw,1100px)] -translate-x-1/2 -translate-y-1/2 overflow-auto rounded-xl border border-rule bg-paper-raised p-8 shadow-[0_30px_80px_-30px_rgb(0_0_0/0.35)] outline-none",
         className,
       )}
       {...props}
     >
       {children}
       <DialogPrimitive.Close
-        className="absolute right-4 top-4 rounded-lg p-1.5 text-muted transition-colors hover:bg-surface-muted hover:text-foreground"
+        className="absolute right-5 top-5 rounded-full p-1.5 text-muted transition-colors hover:bg-paper-deep hover:text-ink"
         aria-label="닫기"
       >
-        <X className="size-4" />
+        <X className="size-4" strokeWidth={1.5} />
       </DialogPrimitive.Close>
     </DialogPrimitive.Content>
   </DialogPrimitive.Portal>

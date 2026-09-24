@@ -17,16 +17,7 @@ export function KnowledgeGraph(props: KnowledgeGraphCanvasProps) {
 function GraphSkeleton() {
   return (
     <div className="absolute inset-0 grid place-items-center">
-      <div className="relative size-24">
-        {[0, 1, 2].map((i) => (
-          <span
-            key={i}
-            className="absolute inset-0 m-auto size-3 animate-pulse-ring rounded-full bg-primary/60"
-            style={{ animationDelay: `${i * 0.5}s` }}
-          />
-        ))}
-        <span className="absolute inset-0 m-auto size-3 rounded-full bg-primary" />
-      </div>
+      <span className="size-1.5 animate-breathe rounded-full bg-accent" />
     </div>
   );
 }

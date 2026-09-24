@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import { LayoutGroup, motion } from "framer-motion";
-import { AlignLeft } from "lucide-react";
 
 import { useActiveHeading } from "@/components/post/use-active-heading";
 import { cn } from "@/lib/utils";
@@ -15,6 +14,7 @@ interface Props {
   group?: string;
 }
 
+/** 여백의 차례 — 지금 읽는 곳 옆을 가느다란 잉크 선이 따라 내려갑니다 */
 export function TableOfContents({ items, className, group = "toc" }: Props) {
   const ids = React.useMemo(() => items.map((i) => i.id), [items]);
   const active = useActiveHeading(ids);
@@ -31,38 +31,37 @@ export function TableOfContents({ items, className, group = "toc" }: Props) {
 
   return (
     <LayoutGroup id={group}>
-    <nav aria-label="목차" className={className}>
-      <p className="eyebrow mb-3 flex items-center gap-2">
-        <AlignLeft className="size-3.5" /> On this page
-      </p>
-      <ul className="relative space-y-0.5 border-l border-border">
-        {items.map((item) => {
-          const isActive = item.id === active;
-          return (
-            <li key={item.id} className="relative">
-              {isActive && (
-                <motion.span
-                  layoutId="active-toc"
-                  className="absolute -left-px top-0 h-full w-[2px] rounded-full bg-brand-gradient shadow-[0_0_10px_rgb(var(--primary)/0.8)]"
-                  transition={{ type: "spring", stiffness: 380, damping: 32 }}
-                />
-              )}
-              <a
-                href={`#${item.id}`}
-                onClick={(e) => onClick(e, item.id)}
-                className={cn(
-                  "block py-1.5 pr-2 text-[13px] leading-snug transition-colors",
-                  item.depth === 3 ? "pl-7" : "pl-4",
-                  isActive ? "font-medium text-foreground" : "text-muted hover:text-foreground",
+      <nav aria-label="목차" className={className}>
+        <p className="meta mb-4 text-sm">차례</p>
+        <ul className="relative space-y-0.5 border-l border-rule">
+          {items.map((item) => {
+            const isActive = item.id === active;
+            return (
+              <li key={item.id} className="relative">
+                {isActive && (
+                  <motion.span
+                    layoutId="active-toc"
+                    className="absolute -left-px top-1 bottom-1 w-px bg-ink"
+                    transition={{ type: "spring", stiffness: 220, damping: 30 }}
+                  />
                 )}
-              >
-                {item.text}
-              </a>
-            </li>
-          );
-        })}
-      </ul>
-    </nav>
+                <a
+                  href={`#${item.id}`}
+                  onClick={(e) => onClick(e, item.id)}
+                  aria-current={isActive ? "location" : undefined}
+                  className={cn(
+                    "block py-1.5 pr-2 text-[0.85rem] leading-snug transition-colors duration-500",
+                    item.depth === 3 ? "pl-7" : "pl-4",
+                    isActive ? "text-ink" : "text-muted hover:text-ink",
+                  )}
+                >
+                  {item.text}
+                </a>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
     </LayoutGroup>
   );
 }

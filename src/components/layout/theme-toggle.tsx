@@ -51,7 +51,7 @@ export function ThemeToggle({ className }: { className?: string }) {
     await transition.ready;
     document.documentElement.animate(
       { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${radius}px at ${x}px ${y}px)`] },
-      { duration: 560, easing: "cubic-bezier(0.4, 0, 0.2, 1)", pseudoElement: "::view-transition-new(root)" },
+      { duration: 900, easing: "cubic-bezier(0.22, 1, 0.36, 1)", pseudoElement: "::view-transition-new(root)" },
     );
   }, [isDark, setTheme]);
 
@@ -62,7 +62,7 @@ export function ThemeToggle({ className }: { className?: string }) {
       onClick={toggle}
       aria-label={isDark ? "라이트 모드로 전환" : "다크 모드로 전환"}
       className={cn(
-        "relative inline-flex size-9 items-center justify-center overflow-hidden rounded-xl border border-border bg-surface/70 text-muted transition-colors hover:border-primary/40 hover:text-foreground",
+        "relative -mr-2 inline-flex size-10 items-center justify-center overflow-hidden rounded-full text-muted transition-colors duration-300 hover:bg-paper-deep hover:text-ink",
         className,
       )}
     >
@@ -70,13 +70,13 @@ export function ThemeToggle({ className }: { className?: string }) {
         {mounted ? (
           <motion.span
             key={isDark ? "moon" : "sun"}
-            initial={{ rotate: -120, scale: 0.4, opacity: 0 }}
-            animate={{ rotate: 0, scale: 1, opacity: 1 }}
-            exit={{ rotate: 120, scale: 0.4, opacity: 0 }}
-            transition={{ type: "spring", stiffness: 260, damping: 18 }}
+            initial={{ rotate: -90, opacity: 0, y: 6 }}
+            animate={{ rotate: 0, opacity: 1, y: 0 }}
+            exit={{ rotate: 90, opacity: 0, y: -6 }}
+            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
             className="absolute"
           >
-            {isDark ? <Moon className="size-[18px]" /> : <Sun className="size-[18px]" />}
+            {isDark ? <Moon className="size-[17px]" strokeWidth={1.5} /> : <Sun className="size-[17px]" strokeWidth={1.5} />}
           </motion.span>
         ) : (
           <span className="size-[18px]" />

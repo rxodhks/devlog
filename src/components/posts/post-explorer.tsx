@@ -1,14 +1,12 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowUpRight, Clock, Search, X } from "lucide-react";
 
-import { DifficultyTag } from "@/components/post/difficulty-tag";
+import { PostRow } from "@/components/posts/post-row";
 import { categories, categoryClasses, categoryList } from "@/lib/site";
-import { cn, formatDate } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import type { CategoryId, PostMeta } from "@/types/post";
 
 export function PostExplorer({ posts, tags }: { posts: PostMeta[]; tags: { tag: string; count: number }[] }) {
@@ -39,126 +37,101 @@ export function PostExplorer({ posts, tags }: { posts: PostMeta[]; tags: { tag: 
         p.tags.some((t) => t.toLowerCase().includes(q))),
   );
 
+  const filterButton = (active: boolean) =>
+    cn(
+      "relative pb-1 text-[0.95rem] transition-colors duration-300",
+      active ? "text-ink after:absolute after:inset-x-0 after:-bottom-px after:h-px after:bg-ink" : "text-muted hover:text-ink",
+    );
+
   return (
     <div>
-      {/* ── Filters ── */}
-      <div className="sticky top-16 z-20 -mx-4 mb-8 space-y-3 border-b border-border/60 bg-background/80 px-4 py-4 backdrop-blur-xl sm:mx-0 sm:rounded-2xl sm:border sm:px-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-          <label className="relative flex-1">
-            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted" />
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="제목, 설명, 태그로 검색…"
-              className="h-10 w-full rounded-xl border border-border bg-surface/80 pl-9 pr-3 text-sm outline-none transition-colors placeholder:text-muted/70 focus:border-primary/50"
-            />
-          </label>
-          <div className="no-scrollbar flex gap-1.5 overflow-x-auto">
-            <button
-              onClick={() => setParam("category", null)}
-              className={cn("chip shrink-0", !category && "border-primary/40 bg-primary/10 text-primary")}
-            >
-              All
-            </button>
-            {categoryList.map((c) => (
-              <button
-                key={c.id}
-                onClick={() => setParam("category", c.id)}
-                className={cn(
-                  "chip shrink-0",
-                  category === c.id && cn(categoryClasses[c.id].border, categoryClasses[c.id].softBg, categoryClasses[c.id].text),
-                )}
-              >
-                <span className={cn("size-1.5 rounded-full", categoryClasses[c.id].bg)} />
-                {c.short}
-              </button>
-            ))}
-          </div>
-        </div>
-        <div className="no-scrollbar flex gap-1.5 overflow-x-auto">
-          {tags.map((t) => (
-            <button
-              key={t.tag}
-              onClick={() => setParam("tag", t.tag)}
-              className={cn(
-                "shrink-0 rounded-md px-2 py-0.5 font-mono text-[11px] transition-colors",
-                tag === t.tag ? "bg-primary text-white" : "bg-surface-muted text-muted hover:text-foreground",
-              )}
-            >
-              #{t.tag}
+      {/* ── 고르기 ── */}
+      <div className="space-y-6 border-b border-rule pb-8">
+        <label className="block max-w-md">
+          <span className="sr-only">글 찾기</span>
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="제목이나 낱말로 찾아보기"
+            className="w-full border-b border-muted/70 bg-transparent pb-2 font-serif text-lg italic text-ink outline-none transition-colors placeholder:text-muted focus:border-ink"
+          />
+        </label>
+
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+          <button onClick={() => setParam("category", null)} className={filterButton(!category)}>
+            전체
+          </button>
+          {categoryList.map((c) => (
+            <button key={c.id} onClick={() => setParam("category", c.id)} className={cn(filterButton(category === c.id), "inline-flex items-center gap-2")}>
+              <span className={cn("size-[6px] rounded-full", categoryClasses[c.id].dot)} aria-hidden />
+              {c.name}
             </button>
           ))}
         </div>
-        {(category || tag) && (
-          <div className="flex items-center gap-2 text-xs text-muted">
-            필터:
-            {category && (
-              <button onClick={() => setParam("category", null)} className="chip py-0.5">
-                {categories[category]?.label} <X className="size-3" />
+
+        <p className="text-sm leading-[2.1] text-muted">
+          <span className="meta mr-3 text-sm">낱말</span>
+          {tags.map((t, i) => (
+            <React.Fragment key={t.tag}>
+            <span className="whitespace-nowrap">
+              <button
+                onClick={() => setParam("tag", t.tag)}
+                className={cn(
+                  "rounded-sm transition-colors",
+                  tag === t.tag ? "bg-marker/70 px-1 text-ink" : "hover:text-ink",
+                )}
+              >
+                {t.tag}
               </button>
-            )}
-            {tag && (
-              <button onClick={() => setParam("tag", null)} className="chip py-0.5">
-                #{tag} <X className="size-3" />
+              {i < tags.length - 1 && <span className="ml-1.5 text-faint">·</span>}
+            </span>{" "}
+            </React.Fragment>
+          ))}
+        </p>
+
+        <AnimatePresence>
+          {(category || tag) && (
+            <motion.p
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="font-serif italic text-muted"
+            >
+              {category && <>{categories[category]?.name} </>}
+              {tag && <>‘{tag}’ </>}
+              글만 보고 있어요.{" "}
+              <button
+                onClick={() => router.replace(pathname, { scroll: false })}
+                className="ink-link not-italic text-ink"
+              >
+                모두 보기
               </button>
-            )}
-          </div>
-        )}
+            </motion.p>
+          )}
+        </AnimatePresence>
       </div>
 
-      {/* ── List ── */}
-      <motion.ul layout className="grid gap-4 md:grid-cols-2">
-        <AnimatePresence mode="popLayout">
-          {filtered.map((post) => {
-            const cls = categoryClasses[post.category];
-            return (
-              <motion.li
-                key={post.slug}
-                layout
-                initial={{ opacity: 0, scale: 0.97 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.97 }}
-                transition={{ duration: 0.25 }}
-              >
-                <Link
-                  href={`/posts/${post.slug}`}
-                  className="group flex h-full flex-col rounded-3xl border border-border bg-surface/70 p-6 transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-glow"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className={cn("inline-flex items-center gap-1.5 text-xs font-medium", cls.text)}>
-                      <span className={cn("size-1.5 rounded-full", cls.dot)} />
-                      {categories[post.category].label}
-                    </span>
-                    <ArrowUpRight className="size-4 text-muted transition-all group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-primary" />
-                  </div>
-                  <h2 className="mt-3 text-lg font-bold leading-snug tracking-tight">{post.title}</h2>
-                  <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-muted">{post.description}</p>
-                  <div className="mt-auto flex flex-wrap items-center gap-x-3 gap-y-2 pt-5 text-xs text-muted">
-                    <time dateTime={post.date}>{formatDate(post.date)}</time>
-                    <span className="inline-flex items-center gap-1">
-                      <Clock className="size-3.5" /> {post.readingTime.minutes} min
-                    </span>
-                    <DifficultyTag difficulty={post.difficulty} />
-                    <span className="flex flex-wrap gap-1.5 font-mono">
-                      {post.tags.slice(0, 3).map((t) => (
-                        <span key={t} className={cn(t === tag && "text-primary")}>
-                          #{t}
-                        </span>
-                      ))}
-                    </span>
-                  </div>
-                </Link>
-              </motion.li>
-            );
-          })}
+      {/* ── 목록 ── */}
+      <ol>
+        <AnimatePresence mode="popLayout" initial={false}>
+          {filtered.map((post) => (
+            <motion.li
+              key={post.slug}
+              layout
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+              className="border-b border-rule"
+            >
+              <PostRow post={post} activeTag={tag} />
+            </motion.li>
+          ))}
         </AnimatePresence>
-      </motion.ul>
+      </ol>
 
       {filtered.length === 0 && (
-        <div className="rounded-3xl border border-dashed border-border py-20 text-center text-muted">
-          <p className="font-mono text-sm">0 rows returned</p>
-          <p className="mt-1 text-sm">조건에 맞는 글이 없어요. 필터를 조정해 보세요.</p>
-        </div>
+        <p className="py-24 text-center font-serif text-lg italic text-muted">아직 그런 글은 없어요. 다른 낱말로 찾아볼까요?</p>
       )}
     </div>
   );

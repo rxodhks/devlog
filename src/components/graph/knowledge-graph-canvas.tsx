@@ -24,6 +24,9 @@ export interface KnowledgeGraphCanvasProps {
 }
 
 /** 시뮬레이션 시작 후 link.source/target 은 id 문자열 → 노드 객체로 바뀝니다. */
+/** 카테고리 노드는 한글 이름으로 */
+const categoryName = (node: GraphNode) => (node.category ? categories[node.category].name : node.label);
+
 const idOf = (end: unknown) =>
   typeof end === "object" && end !== null ? String((end as { id?: string | number }).id) : String(end);
 
@@ -104,9 +107,15 @@ export default function KnowledgeGraphCanvas({
      Pretendard dynamic-subset 은 글자가 DOM에 쓰일 때 해당 조각만 받아오므로,
      캔버스에 그리기 전에 라벨 글자들을 명시적으로 로드해야 fallback 폰트가 섞이지 않습니다. */
   React.useEffect(() => {
-    const text = data.nodes.map((n) => `#${n.label}`).join(" ");
-    const weights = [500, 600, 700];
-    Promise.all(weights.map((w) => document.fonts.load(`${w} 12px "Pretendard Variable"`, text)))
+    const text = data.nodes.map((n) => `#${n.label}`).join(" ") + " 0123456789";
+    const faces = [
+      '400 12px "Pretendard Variable"',
+      '400 12px "Newsreader Variable"',
+      '500 12px "Newsreader Variable"',
+      '400 12px "Noto Serif KR Variable"',
+      '500 12px "Noto Serif KR Variable"',
+    ];
+    Promise.all(faces.map((f) => document.fonts.load(f, text)))
       .catch(() => undefined)
       .finally(() => setFontsReady(true));
   }, [data]);
@@ -116,7 +125,7 @@ export default function KnowledgeGraphCanvas({
   React.useEffect(() => {
     const fg = fgRef.current;
     if (!fg) return;
-    fg.d3Force("charge")?.strength(isPreview ? -70 : -120);
+    fg.d3Force("charge")?.strength(isPreview ? -80 : -130);
     fg.d3Force("link")?.distance((l: FGLink) =>
       l.kind === "category-post" ? (isPreview ? 36 : 54) : l.kind === "post-post" ? 70 : isPreview ? 24 : 34,
     );
@@ -141,15 +150,20 @@ export default function KnowledgeGraphCanvas({
   }, [selectedId, graphData, isPreview]);
 
   const colorOf = React.useCallback(
-    (node: GraphNode) => (node.category ? categories[node.category].hex[dark ? "dark" : "light"] : "#94A3B8"),
+    (node: GraphNode) => (node.category ? categories[node.category].hex[dark ? "dark" : "light"] : "#A8A296"),
     [dark],
   );
 
+  // 종이와 잉크 팔레트 (globals.css 토큰과 동일한 값)
   const palette = dark
-    ? { text: "#E5E7EB", muted: "#94A3B8", halo: "#090D16", link: "rgba(148,163,184,0.16)", linkHi: "#22D3EE" }
-    : { text: "#0F172A", muted: "#475569", halo: "#FAFAFA", link: "rgba(71,85,105,0.18)", linkHi: "#0891B2" };
+    ? { ink: "#ECE7DC", muted: "#9B958A", paper: "#161513", link: "rgba(155,149,138,0.22)", linkHi: "#A3BFA7" }
+    : { ink: "#23211D", muted: "#6B665C", paper: "#F5F3EE", link: "rgba(107,102,92,0.22)", linkHi: "#4A6650" };
 
-  const radiusOf = (node: GraphNode) => Math.sqrt(node.val) * (isPreview ? 2.4 : 3);
+  const radiusOf = (node: GraphNode) =>
+    node.kind === "category" ? (isPreview ? 5.5 : 7) : node.kind === "post" ? (isPreview ? 3.4 : 4.2) : isPreview ? 2 : 2.6;
+
+  const SERIF = '"Newsreader Variable", "Noto Serif KR Variable", serif';
+  const SANS = '"Pretendard Variable", Pretendard, sans-serif';
 
   const drawNode = React.useCallback(
     (node: FGNode, ctx: CanvasRenderingContext2D, scale: number) => {
@@ -160,63 +174,66 @@ export default function KnowledgeGraphCanvas({
       const isFocus = node.id === focusId;
       const isHi = highlight?.has(String(node.id)) ?? false;
       const dimmed = highlight !== null && !isHi;
+      const alpha = dimmed ? 0.22 : 1;
 
       ctx.save();
-      ctx.globalAlpha = dimmed ? 0.12 : 1;
+      ctx.globalAlpha = alpha;
 
-      // 선택/호버 링
+      // 선택/호버: 잉크로 그은 얇은 원
       if (isFocus) {
         ctx.beginPath();
-        ctx.arc(x, y, r + 4 / scale + 2, 0, 2 * Math.PI);
-        ctx.strokeStyle = color;
-        ctx.globalAlpha = 0.45;
-        ctx.lineWidth = 1.5 / scale;
+        ctx.arc(x, y, r + 5 / scale, 0, 2 * Math.PI);
+        ctx.strokeStyle = palette.ink;
+        ctx.lineWidth = 0.8 / scale;
         ctx.stroke();
-        ctx.globalAlpha = 1;
       }
 
-      ctx.shadowColor = color;
-      ctx.shadowBlur = node.kind === "category" || isHi ? 18 : 6;
       ctx.beginPath();
       ctx.arc(x, y, r, 0, 2 * Math.PI);
-
       if (node.kind === "tag") {
-        ctx.fillStyle = palette.halo;
+        // 태그: 속이 빈 작은 원
+        ctx.fillStyle = palette.paper;
         ctx.fill();
-        ctx.lineWidth = 1.6;
-        ctx.strokeStyle = color;
+        ctx.lineWidth = 1 / Math.max(scale, 1);
+        ctx.strokeStyle = palette.muted;
         ctx.stroke();
+      } else if (node.kind === "category") {
+        // 카테고리: 잉크 점 + 색 테두리 한 겹
+        ctx.fillStyle = color;
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(x, y, r + 2.5, 0, 2 * Math.PI);
+        ctx.strokeStyle = color;
+        ctx.globalAlpha = alpha * 0.35;
+        ctx.lineWidth = 0.8;
+        ctx.stroke();
+        ctx.globalAlpha = alpha;
       } else {
         ctx.fillStyle = color;
-        ctx.globalAlpha *= node.kind === "post" ? 0.9 : 1;
         ctx.fill();
       }
-      ctx.shadowBlur = 0;
 
       // 라벨 정책
-      // - preview: 카테고리·포스트는 항상, 태그는 하이라이트(호버)될 때만 → 작은 카드에서 겹침 방지
+      // - preview: 카테고리·포스트는 항상, 태그는 하이라이트(호버)될 때만
       // - full: 카테고리는 항상, 태그·포스트는 적당히 확대했거나 하이라이트될 때
-      const showLabel = isPreview
-        ? node.kind !== "tag" || isHi
-        : node.kind === "category" || isHi || scale > 0.85;
+      const showLabel = isPreview ? node.kind === "category" || (isHi && highlight !== null) : node.kind === "category" || isHi || scale > 0.85;
       if (showLabel) {
-        const base = node.kind === "category" ? 13 : node.kind === "post" ? 11.5 : 10.5;
-        const px = isPreview ? base - 0.5 : base;
-        const weight = node.kind === "category" ? 700 : node.kind === "post" ? 600 : 500;
-        const label = node.kind === "tag" ? `#${node.label}` : node.label;
+        const isCat = node.kind === "category";
+        const px = isCat ? (isPreview ? 15 : 17) : node.kind === "post" ? (isPreview ? 12.5 : 13) : 11.5;
+        const font = node.kind === "tag" ? `400 ${px}px ${SANS}` : `${isCat ? 500 : 400} ${px}px ${SERIF}`;
+        const label = node.kind === "tag" ? `#${node.label}` : isCat ? categoryName(node) : node.label;
         // 라벨은 화면 좌표계(1/scale)로 그려야 작은 폰트가 확대될 때 자간이 깨지지 않습니다.
         ctx.save();
-        ctx.translate(x, y + r + 2 / scale + 1);
+        ctx.translate(x, y + r + (isCat ? 7 : 4) / scale);
         ctx.scale(1 / scale, 1 / scale);
-        ctx.font = `${weight} ${px}px "Pretendard Variable", Pretendard, sans-serif`;
+        ctx.font = font;
         ctx.textAlign = "center";
         ctx.textBaseline = "top";
         ctx.lineJoin = "round";
-        ctx.lineWidth = 3;
-        ctx.strokeStyle = palette.halo;
-        ctx.globalAlpha = dimmed ? 0.12 : 1;
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = palette.paper;
         ctx.strokeText(label, 0, 0);
-        ctx.fillStyle = node.kind === "tag" ? palette.muted : palette.text;
+        ctx.fillStyle = node.kind === "tag" ? palette.muted : palette.ink;
         ctx.fillText(label, 0, 0);
         ctx.restore();
       }
@@ -273,14 +290,14 @@ export default function KnowledgeGraphCanvas({
           nodeVisibility={(n) => visible.has(String(n.id))}
           linkVisibility={(l) => visible.has(idOf(l.source)) && visible.has(idOf(l.target))}
           linkColor={(l) => (isLinkHi(l) ? palette.linkHi : palette.link)}
-          linkWidth={(l) => (isLinkHi(l) ? 2 : l.kind === "category-post" ? 1.2 : 0.8)}
-          linkLineDash={(l) => (l.kind === "post-post" ? [3, 3] : null)}
-          linkDirectionalParticles={(l) => (isLinkHi(l) ? 3 : 0)}
-          linkDirectionalParticleWidth={2.4}
-          linkDirectionalParticleSpeed={0.008}
+          linkWidth={(l) => (isLinkHi(l) ? 1.4 : 0.7)}
+          linkLineDash={(l) => (l.kind === "post-post" ? [2, 3] : null)}
+          linkDirectionalParticles={(l) => (isLinkHi(l) ? 1 : 0)}
+          linkDirectionalParticleWidth={2}
+          linkDirectionalParticleSpeed={0.004}
           linkDirectionalParticleColor={() => palette.linkHi}
           d3VelocityDecay={0.34}
-          d3AlphaDecay={0.03}
+          d3AlphaDecay={isPreview ? 0.04 : 0.045}
           minZoom={0.4}
           maxZoom={6}
           enableZoomInteraction={!isPreview}

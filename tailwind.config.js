@@ -2,8 +2,9 @@
 const defaultTheme = require("tailwindcss/defaultTheme");
 
 /**
- * CSS 변수(RGB 채널)를 Tailwind 컬러로 매핑합니다.
- * `bg-surface/60` 처럼 알파값을 함께 쓸 수 있습니다.
+ * "종이와 잉크" 디자인 토큰
+ * CSS 변수(RGB 채널)를 Tailwind 컬러로 매핑합니다. → `bg-paper/60` 처럼 알파값 사용 가능
+ * 실제 값은 src/app/globals.css 의 :root(종이) / .dark(먹색 밤) 에 있습니다.
  * @param {string} name
  */
 const token = (name) => `rgb(var(--${name}) / <alpha-value>)`;
@@ -15,142 +16,133 @@ module.exports = {
   theme: {
     container: {
       center: true,
-      padding: { DEFAULT: "1rem", sm: "1.5rem", lg: "2rem" },
-      screens: { "2xl": "1280px" },
+      padding: { DEFAULT: "1.25rem", sm: "2rem", lg: "3rem" },
+      screens: { "2xl": "1240px" },
     },
     extend: {
       colors: {
-        background: token("background"),
-        foreground: token("foreground"),
-        surface: {
-          DEFAULT: token("surface"),
-          muted: token("surface-muted"),
-          elevated: token("surface-elevated"),
-        },
-        border: token("border"),
+        // 표면
+        background: token("paper"),
+        paper: { DEFAULT: token("paper"), deep: token("paper-deep"), raised: token("paper-raised") },
+        // 잉크 (텍스트)
+        foreground: token("ink"),
+        ink: { DEFAULT: token("ink"), soft: token("ink-soft") },
         muted: token("muted"),
-        primary: {
-          DEFAULT: token("primary"), // #3B82F6 Electric Indigo/Blue
-          foreground: "rgb(255 255 255 / <alpha-value>)",
-        },
-        cyan: { DEFAULT: token("cyan") }, // #06B6D4
-        success: { DEFAULT: token("success") }, // #10B981 Emerald Mint
-        danger: { DEFAULT: token("danger") },
-        warning: { DEFAULT: token("warning") },
-        // 카테고리 고유 색상 (지식 그래프, 칩, 카드 액센트에 공통 사용)
+        faint: token("faint"),
+        // 선
+        border: token("rule"),
+        rule: { DEFAULT: token("rule"), strong: token("rule-strong") },
+        // 강조: 세이지 한 가지만
+        accent: { DEFAULT: token("accent"), soft: token("accent-soft") },
+        marker: token("marker"),
+        danger: token("danger"),
+        success: token("success"),
+        // 카테고리 잉크 — 점·선 같은 작은 표식에만 사용 (dataviz 검증 통과 팔레트)
         cat: {
-          cs: token("cat-cs"),
           database: token("cat-database"),
           python: token("cat-python"),
+          cs: token("cat-cs"),
           network: token("cat-network"),
+        },
+        // 학습 기록 히트맵용 단일 색상 램프 (sequential)
+        seq: {
+          0: token("seq-0"),
+          1: token("seq-1"),
+          2: token("seq-2"),
+          3: token("seq-3"),
+          4: token("seq-4"),
         },
       },
       fontFamily: {
-        sans: [
-          '"Pretendard Variable"',
-          "Pretendard",
-          '"Inter Variable"',
-          ...defaultTheme.fontFamily.sans,
-        ],
-        mono: [
-          '"JetBrains Mono Variable"',
-          '"Fira Code"',
-          ...defaultTheme.fontFamily.mono,
-        ],
+        sans: ['"Pretendard Variable"', "Pretendard", '"Inter Variable"', ...defaultTheme.fontFamily.sans],
+        serif: ['"Newsreader Variable"', '"Noto Serif KR Variable"', ...defaultTheme.fontFamily.serif],
+        mono: ['"JetBrains Mono Variable"', '"Fira Code"', ...defaultTheme.fontFamily.mono],
+      },
+      fontSize: {
+        "display-1": ["clamp(2.4rem, 1.4rem + 3.6vw, 4.25rem)", { lineHeight: "1.18", letterSpacing: "-0.025em" }],
+        "display-2": ["clamp(1.9rem, 1.3rem + 2vw, 2.9rem)", { lineHeight: "1.25", letterSpacing: "-0.02em" }],
       },
       maxWidth: {
-        prose: "780px",
+        prose: "700px",
       },
-      borderRadius: {
-        "4xl": "2rem",
-      },
-      backgroundImage: {
-        "brand-gradient": "linear-gradient(135deg, rgb(var(--primary)) 0%, rgb(var(--cyan)) 100%)",
-        "grid-pattern":
-          "linear-gradient(to right, rgb(var(--border) / 0.5) 1px, transparent 1px), linear-gradient(to bottom, rgb(var(--border) / 0.5) 1px, transparent 1px)",
-      },
-      boxShadow: {
-        glow: "0 0 0 1px rgb(var(--primary) / 0.15), 0 8px 40px -12px rgb(var(--primary) / 0.45)",
-        card: "0 1px 2px rgb(0 0 0 / 0.04), 0 8px 24px -12px rgb(0 0 0 / 0.08)",
+      transitionTimingFunction: {
+        calm: "cubic-bezier(0.22, 1, 0.36, 1)",
       },
       keyframes: {
-        "gradient-x": {
-          "0%, 100%": { backgroundPosition: "0% 50%" },
-          "50%": { backgroundPosition: "100% 50%" },
-        },
-        shimmer: {
-          from: { backgroundPosition: "200% 0" },
-          to: { backgroundPosition: "-200% 0" },
-        },
-        blink: {
-          "0%, 49%": { opacity: "1" },
-          "50%, 100%": { opacity: "0" },
-        },
-        "pulse-ring": {
-          "0%": { transform: "scale(0.8)", opacity: "0.8" },
-          "100%": { transform: "scale(2.2)", opacity: "0" },
+        breathe: {
+          "0%, 100%": { opacity: "0.45", transform: "scale(1)" },
+          "50%": { opacity: "1", transform: "scale(1.35)" },
         },
       },
       animation: {
-        "gradient-x": "gradient-x 6s ease infinite",
-        shimmer: "shimmer 2.4s linear infinite",
-        blink: "blink 1.1s step-end infinite",
-        "pulse-ring": "pulse-ring 1.8s cubic-bezier(0.2, 0.6, 0.4, 1) infinite",
+        breathe: "breathe 3.2s ease-in-out infinite",
       },
       typography: () => ({
-        techlog: {
+        paper: {
           css: {
-            "--tw-prose-body": "rgb(var(--foreground) / 0.86)",
-            "--tw-prose-headings": "rgb(var(--foreground))",
+            "--tw-prose-body": "rgb(var(--ink-soft))",
+            "--tw-prose-headings": "rgb(var(--ink))",
             "--tw-prose-lead": "rgb(var(--muted))",
-            "--tw-prose-links": "rgb(var(--primary))",
-            "--tw-prose-bold": "rgb(var(--foreground))",
+            "--tw-prose-links": "rgb(var(--accent))",
+            "--tw-prose-bold": "rgb(var(--ink))",
             "--tw-prose-counters": "rgb(var(--muted))",
-            "--tw-prose-bullets": "rgb(var(--primary) / 0.7)",
-            "--tw-prose-hr": "rgb(var(--border))",
-            "--tw-prose-quotes": "rgb(var(--foreground))",
-            "--tw-prose-quote-borders": "rgb(var(--primary))",
+            "--tw-prose-bullets": "rgb(var(--faint))",
+            "--tw-prose-hr": "rgb(var(--rule))",
+            "--tw-prose-quotes": "rgb(var(--ink))",
+            "--tw-prose-quote-borders": "rgb(var(--rule-strong))",
             "--tw-prose-captions": "rgb(var(--muted))",
-            "--tw-prose-code": "rgb(var(--foreground))",
-            "--tw-prose-th-borders": "rgb(var(--border))",
-            "--tw-prose-td-borders": "rgb(var(--border) / 0.6)",
-            lineHeight: "1.7",
+            "--tw-prose-code": "rgb(var(--ink))",
+            "--tw-prose-th-borders": "rgb(var(--rule-strong))",
+            "--tw-prose-td-borders": "rgb(var(--rule))",
             fontSize: "1.0625rem",
+            lineHeight: "1.85",
             maxWidth: "none",
+            p: { marginTop: "1.1em", marginBottom: "1.1em" },
             "h2, h3, h4": {
+              fontFamily: "var(--font-serif)",
               scrollMarginTop: "6rem",
-              letterSpacing: "-0.02em",
-              fontWeight: "700",
+              letterSpacing: "-0.015em",
             },
-            h2: { marginTop: "2.6em", fontSize: "1.6em" },
-            h3: { marginTop: "2em", fontSize: "1.25em" },
+            h2: { fontSize: "1.6em", fontWeight: "500", marginTop: "2.6em", marginBottom: "0.8em", lineHeight: "1.35" },
+            h3: { fontSize: "1.25em", fontWeight: "500", marginTop: "2.1em", marginBottom: "0.6em" },
+            strong: { fontWeight: "600" },
             a: {
-              textDecoration: "none",
-              borderBottom: "1px solid rgb(var(--primary) / 0.35)",
-              transition: "border-color .2s",
-              "&:hover": { borderBottomColor: "rgb(var(--primary))" },
+              fontWeight: "inherit",
+              textDecorationLine: "underline",
+              textDecorationThickness: "1px",
+              textUnderlineOffset: "0.25em",
+              textDecorationColor: "rgb(var(--accent) / 0.4)",
+              transition: "text-decoration-color .3s",
+              "&:hover": { textDecorationColor: "rgb(var(--accent))" },
             },
             "code::before": { content: "none" },
             "code::after": { content: "none" },
             ":not(pre) > code": {
-              fontWeight: "500",
+              fontWeight: "450",
               fontSize: "0.86em",
-              padding: "0.18em 0.42em",
-              borderRadius: "0.375rem",
-              backgroundColor: "rgb(var(--surface-muted))",
-              border: "1px solid rgb(var(--border))",
+              padding: "0.12em 0.38em",
+              borderRadius: "0.3rem",
+              backgroundColor: "rgb(var(--paper-deep))",
             },
             blockquote: {
-              fontStyle: "normal",
+              fontFamily: "var(--font-serif)",
+              fontStyle: "italic",
               fontWeight: "400",
-              backgroundColor: "rgb(var(--surface-muted) / 0.6)",
-              borderRadius: "0 0.75rem 0.75rem 0",
-              padding: "0.25em 1.25em",
+              fontSize: "1.12em",
+              borderLeftWidth: "1px",
+              paddingLeft: "1.2em",
+              color: "rgb(var(--ink))",
             },
             "blockquote p:first-of-type::before": { content: "none" },
             "blockquote p:last-of-type::after": { content: "none" },
-            table: { fontSize: "0.92em" },
-            "thead th": { paddingTop: "0.6em", paddingBottom: "0.6em" },
+            hr: {
+              border: "0",
+              textAlign: "center",
+              margin: "3em 0",
+              "&::before": { content: '"· · ·"', color: "rgb(var(--faint))", letterSpacing: "0.6em" },
+            },
+            "ul > li::marker": { color: "rgb(var(--faint))" },
+            li: { marginTop: "0.35em", marginBottom: "0.35em" },
           },
         },
       }),

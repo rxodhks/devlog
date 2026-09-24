@@ -33,3 +33,28 @@ export function mulberry32(seed: number) {
 export function clamp(n: number, min: number, max: number) {
   return Math.min(max, Math.max(min, n));
 }
+
+/** 2026-09-18 → "2026년 9월 18일" / "9월 18일" */
+export function formatDateKo(input: string, withYear = true) {
+  const [y, m, d] = input.slice(0, 10).split("-").map(Number);
+  return withYear ? `${y}년 ${m}월 ${d}일` : `${m}월 ${d}일`;
+}
+
+/** 로마 숫자 (작은 목록 번호용) */
+export function toRoman(n: number) {
+  const map: [number, string][] = [
+    [10, "x"],
+    [9, "ix"],
+    [5, "v"],
+    [4, "iv"],
+    [1, "i"],
+  ];
+  let out = "";
+  for (const [v, s] of map) {
+    while (n >= v) {
+      out += s;
+      n -= v;
+    }
+  }
+  return out;
+}

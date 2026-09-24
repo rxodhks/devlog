@@ -2,6 +2,9 @@ import type { Metadata, Viewport } from "next";
 
 // Self-hosted fonts (빌드 시 외부 네트워크 불필요)
 import "pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css";
+import "@fontsource-variable/noto-serif-kr";
+import "@fontsource-variable/newsreader/opsz.css";
+import "@fontsource-variable/newsreader/opsz-italic.css";
 import "@fontsource-variable/inter";
 import "@fontsource-variable/jetbrains-mono";
 import "katex/dist/katex.min.css";
@@ -31,8 +34,8 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#FAFAFA" },
-    { media: "(prefers-color-scheme: dark)", color: "#090D16" },
+    { media: "(prefers-color-scheme: light)", color: "#F5F3EE" },
+    { media: "(prefers-color-scheme: dark)", color: "#161513" },
   ],
 };
 
@@ -40,13 +43,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="ko" suppressHydrationWarning>
       <body className="min-h-dvh">
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
-          {/* 배경: 은은한 오로라 + 그리드 */}
-          <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 bg-aurora" />
-          <div
-            aria-hidden
-            className="pointer-events-none fixed inset-x-0 top-0 -z-10 h-[520px] bg-grid-pattern bg-[size:44px_44px] opacity-40 mask-fade-b"
-          />
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <SiteHeader />
           <main className="relative">{children}</main>
           <SiteFooter />

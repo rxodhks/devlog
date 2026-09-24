@@ -2,6 +2,7 @@
 title: "정렬 알고리즘과 시간 복잡도: 왜 O(N log N)이 한계인가"
 shortTitle: "정렬과 시간 복잡도"
 description: "병합 정렬과 퀵 정렬의 분할 정복 구조, 마스터 정리로 점화식 풀기, 그리고 비교 기반 정렬이 N log N보다 빨라질 수 없는 이유를 결정 트리로 증명합니다."
+quote: "비교만으로 정렬한다면, N log N은 넘을 수 없는 벽이다."
 date: "2026-08-12"
 category: cs
 tags: ["Algorithms", "Sorting", "Big-O", "Divide and Conquer"]
@@ -44,7 +45,7 @@ flowchart TB
     I --> K
     J -->|merge| M["3 9 10 27 38 43 82"]
     K -->|merge| M
-    style M fill:#10B98122,stroke:#10B981,stroke-width:2px
+    style M fill:#8FA89433,stroke:#6E8B73,stroke-width:1.5px
 ```
 
 ```python title="merge_sort.py" {12-16}

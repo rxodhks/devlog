@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import { motion } from "framer-motion";
-import { Calculator as CalculatorIcon, RotateCcw, SlidersHorizontal } from "lucide-react";
 
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { calculators, fromSlider, toSlider } from "@/lib/calculators";
@@ -34,20 +33,18 @@ export function MathCalcClient({ id, block, formulaHtml, popoverFormulaHtml, var
       <button
         type="button"
         className={cn(
-          "group/math relative cursor-pointer rounded-lg text-left transition-colors",
+          "group/math relative cursor-pointer text-left transition-colors duration-300",
           block
-            ? "my-6 flex w-full items-center justify-center overflow-x-auto rounded-2xl border border-dashed border-primary/40 bg-primary/[0.04] px-4 py-6 hover:border-primary hover:bg-primary/[0.07] [&_.katex-display]:m-0 [&_.katex-display]:border-0 [&_.katex-display]:bg-transparent [&_.katex-display]:p-0"
-            : "mx-0.5 inline-flex items-baseline gap-1 border-b border-dashed border-primary/60 px-1 hover:bg-primary/10",
+            ? "my-10 flex w-full flex-col items-center gap-3 [&_.katex-display]:!m-0 [&_.katex-display]:!p-0 [&_.katex-display]:after:!content-none"
+            : "mx-0.5 inline-flex items-baseline border-b border-dotted border-accent/70 px-0.5 hover:border-solid hover:bg-accent-soft/40",
         )}
-        aria-label={`${calc.title} 계산기 열기`}
+        aria-label={`${calc.title} — 값을 바꿔 보는 작은 계산기 열기`}
       >
         <span dangerouslySetInnerHTML={{ __html: formulaHtml }} />
-        {block ? (
-          <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-md border border-primary/30 bg-surface/80 px-1.5 py-0.5 font-mono text-[10px] text-primary">
-            <SlidersHorizontal className="size-3" /> interactive
+        {block && (
+          <span className="font-serif text-sm italic text-muted transition-colors group-hover/math:text-accent">
+            식을 눌러 값을 바꿔 보세요
           </span>
-        ) : (
-          <CalculatorIcon className="size-3 translate-y-[1px] text-primary opacity-60 transition-opacity group-hover/math:opacity-100" />
         )}
       </button>
     </PopoverTrigger>
@@ -56,39 +53,38 @@ export function MathCalcClient({ id, block, formulaHtml, popoverFormulaHtml, var
   return (
     <Popover>
       {trigger}
-      <PopoverContent className="w-[min(92vw,380px)] p-0" align={block ? "center" : "start"}>
-        <div className="border-b border-border px-4 pb-3 pt-4">
-          <div className="flex items-start justify-between gap-2">
+      <PopoverContent className="w-[min(92vw,360px)] p-0" align={block ? "center" : "start"}>
+        <div className="px-5 pb-4 pt-5">
+          <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="eyebrow text-primary">Mini Calculator</p>
-              <p className="mt-1 text-sm font-semibold">{calc.title}</p>
+              <p className="meta text-sm">작은 계산기</p>
+              <p className="mt-1 font-serif text-[1.05rem] text-ink">{calc.title}</p>
             </div>
             <button
               type="button"
               onClick={() => setValues(defaults)}
-              className="rounded-md p-1.5 text-muted transition-colors hover:bg-surface-muted hover:text-foreground"
-              aria-label="기본값으로 초기화"
+              className="ink-link shrink-0 pt-0.5 text-xs text-muted hover:text-ink"
             >
-              <RotateCcw className="size-3.5" />
+              처음 값으로
             </button>
           </div>
           <div
-            className="mt-3 overflow-x-auto rounded-xl bg-surface-muted/70 px-3 py-3 text-[13px] [&_.katex-display]:m-0 [&_.katex-display]:border-0 [&_.katex-display]:bg-transparent [&_.katex-display]:p-0"
+            className="mt-4 overflow-x-auto text-[13px] [&_.katex-display]:!m-0 [&_.katex-display]:!p-0"
             dangerouslySetInnerHTML={{ __html: popoverFormulaHtml }}
           />
-          <p className="mt-2 text-xs leading-relaxed text-muted">{calc.description}</p>
+          <p className="mt-3 text-xs leading-relaxed text-muted">{calc.description}</p>
         </div>
 
-        {/* ── Variables ── */}
-        <div className="space-y-3.5 px-4 py-3.5">
+        {/* ── 변수 ── */}
+        <div className="space-y-4 border-t border-rule px-5 py-4">
           {calc.variables.map((v) => (
             <label key={v.key} className="block">
-              <div className="mb-1.5 flex items-center justify-between text-xs">
+              <div className="mb-2 flex items-center justify-between text-xs">
                 <span className="flex items-center gap-2 text-muted">
-                  <span className="text-foreground" dangerouslySetInnerHTML={{ __html: variableHtml[v.key] }} />
+                  <span className="text-ink" dangerouslySetInnerHTML={{ __html: variableHtml[v.key] }} />
                   {v.label}
                 </span>
-                <span className="font-mono font-semibold tabular-nums text-foreground">
+                <span className="font-mono tabular-nums text-ink">
                   {(v.format ?? String)(values[v.key])}
                   {v.unit && <span className="ml-0.5 text-muted">{v.unit}</span>}
                 </span>
@@ -107,41 +103,36 @@ export function MathCalcClient({ id, block, formulaHtml, popoverFormulaHtml, var
           ))}
         </div>
 
-        {/* ── Results ── */}
-        <div className="space-y-2 border-t border-border bg-surface-muted/40 px-4 py-3.5">
+        {/* ── 결과 ── */}
+        <div className="space-y-2.5 border-t border-rule bg-paper-deep/50 px-5 py-4">
           {results.map((r) => (
             <div key={r.key}>
               <div className="flex items-center justify-between gap-3 text-xs">
                 <span className="flex items-center gap-2 text-muted">
                   {outputHtml[r.key] && (
-                    <span className="text-foreground/90" dangerouslySetInnerHTML={{ __html: outputHtml[r.key] }} />
+                    <span className="text-ink-soft" dangerouslySetInnerHTML={{ __html: outputHtml[r.key] }} />
                   )}
                   {r.label}
                 </span>
-                <span
-                  className={cn(
-                    "font-mono tabular-nums",
-                    r.emphasis ? "text-sm font-bold text-success" : "font-medium text-foreground",
-                  )}
-                >
+                <span className={cn("font-mono tabular-nums", r.emphasis ? "text-sm text-accent" : "text-ink")}>
                   {r.format(r.value)}
                 </span>
               </div>
               {r.bar && (
-                <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-border/60">
+                <div className="mt-1.5 h-[3px] overflow-hidden rounded-full bg-rule">
                   <motion.div
-                    className={cn("h-full rounded-full", r.emphasis ? "bg-success" : "bg-brand-gradient")}
+                    className={cn("h-full rounded-full", r.emphasis ? "bg-accent" : "bg-ink-soft/50")}
                     initial={false}
                     animate={{
                       width: `${Math.max(2, ((calc.logBars ? Math.log10(r.value + 1) : r.value) / barMax) * 100)}%`,
                     }}
-                    transition={{ type: "spring", stiffness: 200, damping: 26 }}
+                    transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
                   />
                 </div>
               )}
             </div>
           ))}
-          {calc.footnote && <p className="pt-1 text-[11px] leading-relaxed text-muted/80">{calc.footnote}</p>}
+          {calc.footnote && <p className="pt-1 font-serif text-[11.5px] italic leading-relaxed text-muted">{calc.footnote}</p>}
         </div>
       </PopoverContent>
     </Popover>

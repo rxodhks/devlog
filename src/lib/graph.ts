@@ -51,7 +51,7 @@ export function buildKnowledgeGraph(posts: PostMeta[]): KnowledgeGraphData {
     if (catPosts.length === 0) continue;
     nodes.set(`cat:${cat.id}`, {
       id: `cat:${cat.id}`,
-      label: cat.label.split(" /")[0],
+      label: cat.name,
       kind: "category",
       category: cat.id,
       val: 14,

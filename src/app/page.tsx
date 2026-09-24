@@ -1,30 +1,26 @@
-import { CategoriesCard } from "@/components/home/categories-card";
-import { GraphPreviewCard } from "@/components/home/graph-preview-card";
-import { HeroCard } from "@/components/home/hero-card";
-import { LatestPostsCard } from "@/components/home/latest-posts-card";
-import { PacketFlow, PythonRepl } from "@/components/home/mini-visuals";
-import { FeaturedPostCard, PostMiniCard } from "@/components/home/post-cards";
-import { RoadmapCard } from "@/components/home/roadmap-card";
-import { StudyStatsCard } from "@/components/home/study-stats-card";
+import { Intro } from "@/components/home/intro";
+import { LeadArticle } from "@/components/home/lead-article";
+import { LearningPath } from "@/components/home/learning-path";
+import { PostIndex } from "@/components/home/post-index";
+import { StudyTraces } from "@/components/home/study-traces";
+import { Topics } from "@/components/home/topics";
 import { buildKnowledgeGraph } from "@/lib/graph";
 import { getAllPostMeta, getAllTags, getPostBySlug } from "@/lib/posts";
 import { categoryList } from "@/lib/site";
 import { getStudyStats } from "@/lib/study-data";
 import { extractToc } from "@/lib/toc";
-import type { CategoryId, PostMeta } from "@/types/post";
+import type { CategoryId } from "@/types/post";
 
-/** Featured 카드에 넣을 SQL 스니펫 (정적 하이라이트) */
-function SqlSnippet() {
-  const k = "text-cat-cs"; // keyword
-  const f = "text-cat-network"; // function
-  const c = "text-muted/70"; // comment
+/** "이번 글" 옆에 조용히 놓이는 코드 한 조각 */
+function SqlExcerpt() {
+  const k = "text-accent"; // keyword — 세이지 하나로만
+  const c = "text-muted italic"; // comment
   return (
     <code>
-      <span className={c}>-- 부서별 급여 순위 (행을 유지한 채 집계)</span>
+      <span className={c}>-- 행은 그대로, 옆에 순위를 붙인다</span>
       {"\n"}
       <span className={k}>SELECT</span> dept, name, salary,
-      {"\n       "}
-      <span className={f}>RANK</span>() <span className={k}>OVER</span> (
+      {"\n       "}RANK() <span className={k}>OVER</span> (
       {"\n         "}
       <span className={k}>PARTITION BY</span> dept
       {"\n         "}
@@ -36,73 +32,52 @@ function SqlSnippet() {
   );
 }
 
-function pickFeatured(posts: PostMeta[], category: CategoryId) {
-  return posts.find((p) => p.category === category && p.featured) ?? posts.find((p) => p.category === category);
-}
-
 export default function HomePage() {
   const posts = getAllPostMeta();
   const tags = getAllTags();
   const graph = buildKnowledgeGraph(posts);
-  const stats = getStudyStats();
+  const latest = posts[0];
+  const stats = getStudyStats(latest?.date ?? "2026-09-18");
 
   const counts = Object.fromEntries(
     categoryList.map((c) => [c.id, posts.filter((p) => p.category === c.id).length]),
   ) as Record<CategoryId, number>;
 
-  const sqlPost = pickFeatured(posts, "database");
-  const pythonPost = pickFeatured(posts, "python");
-  const networkPost = pickFeatured(posts, "network");
-  const sqlOutline = sqlPost
-    ? extractToc(getPostBySlug(sqlPost.slug)?.source ?? "")
+  // "이번 글": 가장 최근의 대표 글
+  const lead = posts.find((p) => p.featured) ?? latest;
+  const outline = lead
+    ? extractToc(getPostBySlug(lead.slug)?.source ?? "")
         .filter((t) => t.depth === 2)
         .map((t) => t.text)
     : [];
+  const rest = posts.filter((p) => p.slug !== lead?.slug);
 
   return (
-    <div className="container pb-8 pt-6 sm:pt-10">
-      {/*
-        Bento Grid (lg: 4 columns)
-        ┌──────────┬──────────┐
-        │  Hero    │  Graph   │
-        ├──────────┼────┬─────┤
-        │ Featured │ Py │ Net │
-        │  (SQL)   ├────┴─────┤
-        │          │Categories│
-        ├──────────┼──────────┤
-        │ Roadmap  │  Stats   │
-        ├──────────┴──────────┤
-        │   Recent writing    │
-        └─────────────────────┘
-      */}
-      <div className="grid auto-rows-[minmax(0,auto)] grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <HeroCard
-          stats={{
-            posts: posts.length,
-            tags: tags.length,
-            categories: categoryList.length,
-            minutes: posts.reduce((a, p) => a + p.readingTime.minutes, 0),
-          }}
-        />
-        <GraphPreviewCard data={graph} />
-
-        {sqlPost && (
-          <FeaturedPostCard
-            post={sqlPost}
-            snippet={<SqlSnippet />}
-            filename="ranking.sql"
-            outline={sqlOutline}
-            index={2}
+    <div className="container">
+      <div className="space-y-28 pb-8 pt-12 sm:space-y-36 sm:pt-20">
+        {latest && (
+          <Intro
+            latest={latest}
+            totalPosts={posts.length}
+            totalMinutes={posts.reduce((a, p) => a + p.readingTime.minutes, 0)}
+            graph={graph}
           />
         )}
-        {pythonPost && <PostMiniCard post={pythonPost} index={3} visual={<PythonRepl />} />}
-        {networkPost && <PostMiniCard post={networkPost} index={4} visual={<PacketFlow />} />}
-        <CategoriesCard counts={counts} tags={tags} index={5} />
 
-        <RoadmapCard index={6} />
-        <StudyStatsCard stats={stats} index={7} />
+        {lead && <LeadArticle post={lead} outline={outline} excerpt={<SqlExcerpt />} excerptLabel="ranking.sql" />}
 
-        <LatestPostsCard posts={posts} index={8} />
+        <PostIndex posts={rest} />
+
+        <div className="grid grid-cols-1 gap-y-24 lg:grid-cols-12 lg:gap-x-10">
+          <div className="min-w-0 lg:col-span-5">
+            <Topics counts={counts} tags={tags} />
+          </div>
+          <div className="min-w-0 lg:col-span-6 lg:col-start-7">
+            <LearningPath />
+          </div>
+        </div>
+
+        <StudyTraces stats={stats} />
       </div>
     </div>
   );

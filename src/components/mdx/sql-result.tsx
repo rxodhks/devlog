@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import { motion } from "framer-motion";
-import { CheckCircle2, Loader2, Timer } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
@@ -87,10 +86,10 @@ function ResultGrid({
   engine,
   highlight,
 }: Required<Pick<SqlResultProps, "columns" | "rows" | "time" | "engine" | "highlight">>) {
-  // 짧은 "실행 중" 상태로 실행 느낌을 주는 마이크로 인터랙션
+  // 잠깐 "실행 중" 상태를 두어 실행하는 느낌을 줍니다
   const [running, setRunning] = React.useState(true);
   React.useEffect(() => {
-    const t = setTimeout(() => setRunning(false), 420);
+    const t = setTimeout(() => setRunning(false), 380);
     return () => clearTimeout(t);
   }, []);
 
@@ -99,33 +98,22 @@ function ResultGrid({
   const isNumeric = (col: number) => rows.every((r) => r[col] === null || numericLike(r[col]));
 
   return (
-    <div className="font-mono text-[12.5px]">
-      <div className="flex items-center justify-between border-b border-border/70 px-4 py-2 text-[11px] text-muted">
-        <span className="inline-flex items-center gap-1.5">
-          <span className="size-1.5 rounded-full bg-success shadow-[0_0_8px_rgb(var(--success))]" />
-          {engine} · sandbox
-        </span>
-        <span>{columns.length} columns</span>
-      </div>
-
+    <div className="px-5 pb-4 pt-3">
       <div className="relative max-h-[420px] overflow-auto">
         {running ? (
-          <div className="flex h-40 items-center justify-center gap-2 text-muted">
-            <Loader2 className="size-4 animate-spin text-primary" />
-            Executing query…
-          </div>
+          <p className="flex h-36 items-center justify-center gap-2 font-serif text-sm italic text-muted">
+            <span className="size-1.5 animate-breathe rounded-full bg-accent" />
+            쿼리를 실행하고 있어요…
+          </p>
         ) : (
-          <table className="w-full border-separate border-spacing-0 text-left">
-            <thead className="sticky top-0 z-10 bg-[rgb(var(--code-header))]">
-              <tr>
-                <th className="w-10 border-b border-r border-border px-3 py-2 text-right text-[10.5px] font-medium text-muted/70">
-                  #
-                </th>
+          <table className="w-full border-collapse text-left text-[0.85rem]">
+            <thead>
+              <tr className="border-b border-rule-strong">
                 {columns.map((c, i) => (
                   <th
                     key={c}
                     className={cn(
-                      "border-b border-r border-border px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-foreground/80 last:border-r-0",
+                      "whitespace-nowrap px-3 pb-2 pt-1 font-serif text-[0.85rem] font-normal italic text-muted first:pl-0",
                       isNumeric(i) && "text-right",
                     )}
                   >
@@ -138,30 +126,23 @@ function ResultGrid({
               {rows.map((row, r) => (
                 <motion.tr
                   key={r}
-                  initial={{ opacity: 0, x: -6 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: r * 0.035, duration: 0.25 }}
-                  className={cn(
-                    "transition-colors hover:bg-primary/[0.06]",
-                    highlight.includes(r) && "bg-success/[0.08] hover:bg-success/[0.12]",
-                  )}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: r * 0.04, duration: 0.4 }}
+                  className={cn("border-b border-rule last:border-b-0", highlight.includes(r) && "bg-marker/40")}
                 >
-                  <td className="border-b border-r border-border/60 px-3 py-1.5 text-right text-[11px] text-muted/60">
-                    {r + 1}
-                  </td>
                   {row.map((cell, c) => (
                     <td
                       key={c}
                       className={cn(
-                        "whitespace-nowrap border-b border-r border-border/60 px-3 py-1.5 last:border-r-0",
-                        numericLike(cell) && "text-right tabular-nums text-cat-network",
-                        highlight.includes(r) && "font-semibold",
+                        "whitespace-nowrap px-3 py-2 text-ink-soft first:pl-0",
+                        numericLike(cell) && "text-right font-mono text-[0.8rem] tabular-nums text-ink",
                       )}
                     >
                       {cell === null ? (
-                        <span className="italic text-muted/60">NULL</span>
+                        <span className="font-serif italic text-muted">null</span>
                       ) : typeof cell === "boolean" ? (
-                        <span className={cell ? "text-success" : "text-danger"}>{String(cell)}</span>
+                        <span className={cell ? "text-success" : "text-danger"}>{cell ? "참" : "거짓"}</span>
                       ) : (
                         String(cell)
                       )}
@@ -173,17 +154,12 @@ function ResultGrid({
           </table>
         )}
       </div>
-
-      <div className="flex items-center justify-between border-t border-border bg-[rgb(var(--code-header))] px-4 py-2 text-[11px]">
-        <span className="inline-flex items-center gap-1.5 text-success">
-          <CheckCircle2 className="size-3.5" />
-          {running ? "running" : `${rows.length} rows returned`}
+      <p className="mt-3 flex justify-between gap-4 font-serif text-[0.85rem] italic text-muted">
+        <span>{running ? "실행 중" : `${rows.length}행을 돌려받았어요`}</span>
+        <span>
+          {engine} · {running ? "…" : time}
         </span>
-        <span className="inline-flex items-center gap-1 text-muted">
-          <Timer className="size-3.5" />
-          {running ? "…" : time}
-        </span>
-      </div>
+      </p>
     </div>
   );
 }

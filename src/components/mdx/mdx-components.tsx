@@ -1,7 +1,6 @@
 import * as React from "react";
 import Link from "next/link";
 import type { MDXComponents } from "mdx/types";
-import { Hash } from "lucide-react";
 
 import { Callout } from "@/components/mdx/callout";
 import { CodeBlock } from "@/components/mdx/code-block";
@@ -21,9 +20,9 @@ function heading(Tag: "h2" | "h3" | "h4") {
           <a
             href={`#${id}`}
             aria-label="이 섹션 링크"
-            className="absolute -left-6 top-1/2 hidden -translate-y-1/2 !border-0 text-muted/50 opacity-0 transition-opacity hover:text-primary group-hover:opacity-100 md:block"
+            className="absolute -left-7 top-0 hidden font-serif text-[0.8em] font-light !text-muted !no-underline opacity-0 transition-opacity duration-500 hover:!text-accent group-hover:opacity-100 md:block"
           >
-            <Hash className="size-4" />
+            §
           </a>
         )}
         {children}
@@ -100,9 +99,9 @@ function Anchor({ href = "", children, ...rest }: React.AnchorHTMLAttributes<HTM
 
 function Table(props: React.TableHTMLAttributes<HTMLTableElement>) {
   return (
-    <div className="not-prose my-7 overflow-x-auto rounded-2xl border border-border">
+    <div className="not-prose my-10 overflow-x-auto border-y border-rule-strong">
       <table
-        className="w-full border-collapse text-left text-[0.9rem] [&_td]:border-t [&_td]:border-border/70 [&_td]:px-4 [&_td]:py-2.5 [&_th]:bg-surface-muted/70 [&_th]:px-4 [&_th]:py-2.5 [&_th]:font-semibold [&_tr:hover_td]:bg-surface-muted/40"
+        className="w-full border-collapse text-left text-[0.92rem] text-ink-soft [&_code]:rounded [&_code]:bg-paper-deep [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:font-mono [&_code]:text-[0.85em] [&_td]:border-t [&_td]:border-rule [&_td]:px-4 [&_td]:py-3 [&_td:first-child]:pl-0 [&_th]:px-4 [&_th]:pb-2.5 [&_th]:pt-3 [&_th]:font-serif [&_th]:font-normal [&_th]:italic [&_th]:text-muted [&_th:first-child]:pl-0"
         {...props}
       />
     </div>
@@ -111,7 +110,7 @@ function Table(props: React.TableHTMLAttributes<HTMLTableElement>) {
 
 function Kbd({ children }: { children: React.ReactNode }) {
   return (
-    <kbd className="rounded-md border border-b-2 border-border bg-surface-muted px-1.5 py-0.5 font-mono text-[0.8em]">
+    <kbd className="rounded border border-b-2 border-rule-strong bg-paper-raised px-1.5 py-0.5 font-mono text-[0.8em]">
       {children}
     </kbd>
   );

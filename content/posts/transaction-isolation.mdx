@@ -2,6 +2,7 @@
 title: "트랜잭션 격리 수준과 동시성 이상 현상 (Dirty Read ~ Phantom Read)"
 shortTitle: "트랜잭션 격리 수준"
 description: "두 트랜잭션이 같은 데이터를 동시에 만질 때 무슨 일이 생길까? 격리 수준별 이상 현상을 시퀀스 다이어그램으로 재현하고, Oracle·PostgreSQL·MySQL의 기본 동작 차이를 비교합니다."
+quote: "완벽한 격리는 결국 줄을 서는 일이다. 우리는 어디까지 양보할지 고를 뿐."
 date: "2026-08-20"
 category: database
 tags: ["SQL", "Transactions", "Concurrency", "MVCC"]
@@ -113,8 +114,8 @@ flowchart TB
     end
     TA["Tx A · snapshot @ 100"] -.reads.-> V1
     TB["Tx B · snapshot @ 110"] -.reads.-> V2
-    style V1 fill:#3B82F622,stroke:#3B82F6
-    style V2 fill:#10B98122,stroke:#10B981
+    style V1 fill:#7C95B033,stroke:#6A83A0
+    style V2 fill:#8FA89433,stroke:#6E8B73
 ```
 
 덕분에 `SELECT`는 잠금을 기다리지 않습니다. 대신 오래된 버전을 정리하는 비용이 생기는데, PostgreSQL의 `VACUUM`, Oracle의 Undo 세그먼트 관리가 바로 그것입니다. Oracle에서 긴 조회 중 `ORA-01555: snapshot too old` 가 나는 이유도 필요한 과거 버전이 Undo에서 덮어써졌기 때문입니다.

@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import { useTheme } from "next-themes";
-import { Maximize2, Workflow } from "lucide-react";
 
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
@@ -15,81 +14,52 @@ function loadMermaid() {
   return mermaidPromise;
 }
 
-const FONT = '"Pretendard Variable", Pretendard, "Inter Variable", sans-serif';
+const FONT = '"Pretendard Variable", Pretendard, sans-serif';
 
+/** 종이와 잉크: 채움은 거의 없이, 선은 가늘게 */
 function themeVariables(dark: boolean) {
-  return dark
-    ? {
-        darkMode: true,
-        fontFamily: FONT,
-        fontSize: "14px",
-        background: "#0B101C",
-        primaryColor: "#15213A",
-        primaryTextColor: "#E5E7EB",
-        primaryBorderColor: "#3B82F6",
-        secondaryColor: "#0E2A33",
-        secondaryBorderColor: "#06B6D4",
-        secondaryTextColor: "#E5E7EB",
-        tertiaryColor: "#111827",
-        tertiaryBorderColor: "#334155",
-        lineColor: "#64748B",
-        textColor: "#CBD5E1",
-        mainBkg: "#15213A",
-        nodeBorder: "#3B82F6",
-        clusterBkg: "#0F172A",
-        clusterBorder: "#1F2937",
-        edgeLabelBackground: "#0B101C",
-        actorBkg: "#15213A",
-        actorBorder: "#3B82F6",
-        actorTextColor: "#E5E7EB",
-        actorLineColor: "#475569",
-        signalColor: "#94A3B8",
-        signalTextColor: "#E5E7EB",
-        labelBoxBkgColor: "#15213A",
-        labelBoxBorderColor: "#3B82F6",
-        labelTextColor: "#E5E7EB",
-        loopTextColor: "#94A3B8",
-        noteBkgColor: "#10231F",
-        noteBorderColor: "#10B981",
-        noteTextColor: "#D1FAE5",
-        activationBkgColor: "#1E3A5F",
-        activationBorderColor: "#3B82F6",
-        attributeBackgroundColorOdd: "#111827",
-        attributeBackgroundColorEven: "#0B101C",
-      }
-    : {
-        darkMode: false,
-        fontFamily: FONT,
-        fontSize: "14px",
-        background: "#F8FAFC",
-        primaryColor: "#EFF6FF",
-        primaryTextColor: "#0F172A",
-        primaryBorderColor: "#3B82F6",
-        secondaryColor: "#ECFEFF",
-        secondaryBorderColor: "#06B6D4",
-        tertiaryColor: "#FFFFFF",
-        tertiaryBorderColor: "#CBD5E1",
-        lineColor: "#94A3B8",
-        textColor: "#334155",
-        mainBkg: "#EFF6FF",
-        nodeBorder: "#3B82F6",
-        clusterBkg: "#F8FAFC",
-        clusterBorder: "#E2E8F0",
-        edgeLabelBackground: "#F8FAFC",
-        actorBkg: "#EFF6FF",
-        actorBorder: "#3B82F6",
-        actorTextColor: "#0F172A",
-        actorLineColor: "#CBD5E1",
-        signalColor: "#64748B",
-        signalTextColor: "#0F172A",
-        noteBkgColor: "#ECFDF5",
-        noteBorderColor: "#10B981",
-        noteTextColor: "#064E3B",
-        activationBkgColor: "#DBEAFE",
-        activationBorderColor: "#3B82F6",
-        attributeBackgroundColorOdd: "#FFFFFF",
-        attributeBackgroundColorEven: "#F8FAFC",
-      };
+  const c = dark
+    ? { paper: "#161513", deep: "#1E1D1A", raised: "#24221F", ink: "#ECE7DC", soft: "#CFC9BC", muted: "#9B958A", rule: "#403D37", accent: "#A3BFA7", note: "#2E3A30" }
+    : { paper: "#F5F3EE", deep: "#ECE9E2", raised: "#FBFAF7", ink: "#23211D", soft: "#3B3833", muted: "#6B665C", rule: "#C9C3B6", accent: "#4A6650", note: "#E3EADF" };
+  return {
+    darkMode: dark,
+    fontFamily: FONT,
+    fontSize: "14px",
+    background: "transparent",
+    primaryColor: c.raised,
+    primaryTextColor: c.ink,
+    primaryBorderColor: c.muted,
+    secondaryColor: c.deep,
+    secondaryBorderColor: c.rule,
+    secondaryTextColor: c.ink,
+    tertiaryColor: c.paper,
+    tertiaryBorderColor: c.rule,
+    lineColor: c.muted,
+    textColor: c.soft,
+    mainBkg: c.raised,
+    nodeBorder: c.muted,
+    clusterBkg: "transparent",
+    clusterBorder: c.rule,
+    titleColor: c.muted,
+    edgeLabelBackground: c.deep,
+    actorBkg: c.raised,
+    actorBorder: c.muted,
+    actorTextColor: c.ink,
+    actorLineColor: c.rule,
+    signalColor: c.muted,
+    signalTextColor: c.ink,
+    labelBoxBkgColor: c.raised,
+    labelBoxBorderColor: c.muted,
+    labelTextColor: c.ink,
+    loopTextColor: c.muted,
+    noteBkgColor: c.note,
+    noteBorderColor: c.accent,
+    noteTextColor: c.ink,
+    activationBkgColor: c.deep,
+    activationBorderColor: c.muted,
+    attributeBackgroundColorOdd: c.raised,
+    attributeBackgroundColorEven: c.deep,
+  };
 }
 
 let renderCount = 0;
@@ -113,7 +83,7 @@ export function Mermaid({ chart, caption }: { chart: string; caption?: string })
           securityLevel: "strict",
           theme: "base",
           themeVariables: themeVariables(resolvedTheme === "dark"),
-          flowchart: { curve: "basis", padding: 14, htmlLabels: true },
+          flowchart: { curve: "basis", padding: 16, htmlLabels: true, nodeSpacing: 40, rankSpacing: 46 },
           sequence: { mirrorActors: false, messageAlign: "center" },
           er: { layoutDirection: "TB" },
         });
@@ -158,42 +128,36 @@ export function Mermaid({ chart, caption }: { chart: string; caption?: string })
       />
     </div>
   ) : (
-    <div className="h-56 animate-shimmer rounded-xl bg-[linear-gradient(90deg,transparent,rgb(var(--primary)/0.08),transparent)] bg-[length:200%_100%]" />
+    <div className="grid h-48 place-items-center">
+      <span className="size-1.5 animate-breathe rounded-full bg-accent" />
+    </div>
   );
 
   return (
-    <figure className="not-prose group/mermaid my-8 overflow-hidden rounded-2xl border border-border bg-[rgb(var(--code-bg))]">
-      <div className="flex h-11 items-center justify-between border-b border-border bg-[rgb(var(--code-header))] pl-4 pr-2">
-        <span className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-wider text-muted">
-          <Workflow className="size-3.5 text-cyan" />
-          mermaid · {kind}
+    <figure className="not-prose mermaid-figure my-12">
+      <div className="rounded-xl bg-paper-deep/60 px-4 py-8 sm:px-8">{body}</div>
+      <figcaption className="mt-3 flex items-baseline justify-between gap-4 text-sm">
+        <span className="font-serif italic text-muted">
+          <span className="figure-number" />
+          {caption ?? kind}
         </span>
         <Dialog>
           <DialogTrigger
             disabled={!svg}
-            className="inline-flex h-7 items-center gap-1.5 rounded-lg px-2 font-mono text-[11px] text-muted transition-colors hover:bg-surface/70 hover:text-foreground disabled:opacity-40"
+            className="ink-link shrink-0 text-muted transition-colors hover:text-ink disabled:opacity-40"
             aria-label="다이어그램 크게 보기"
           >
-            <Maximize2 className="size-3.5" />
-            <span className="hidden sm:inline">Expand</span>
+            크게 보기
           </DialogTrigger>
           <DialogContent>
-            <DialogTitle className="mb-4 font-mono text-xs uppercase tracking-wider text-muted">
-              {caption ?? `mermaid · ${kind}`}
-            </DialogTitle>
+            <DialogTitle className="mb-6 font-serif text-base font-normal italic text-muted">{caption ?? kind}</DialogTitle>
             <div
               className="flex justify-center [&_svg]:h-auto [&_svg]:!max-w-none [&_svg]:min-w-[min(100%,900px)]"
               dangerouslySetInnerHTML={{ __html: svg }}
             />
           </DialogContent>
         </Dialog>
-      </div>
-      <div className="p-5 sm:p-8">{body}</div>
-      {caption && (
-        <figcaption className="border-t border-border/70 px-4 py-2.5 text-center text-xs text-muted">
-          {caption}
-        </figcaption>
-      )}
+      </figcaption>
     </figure>
   );
 }
